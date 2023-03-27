@@ -21,6 +21,7 @@ install.packages('OECD')
 # --- Libraries --- #
 # ----------------- #
 library(OECD)                                                 # OECD API
+library(openxlsx)
 
 
 # ----------------------- #
@@ -28,7 +29,7 @@ library(OECD)                                                 # OECD API
 # ----------------------- #
 # Na funcao get_dataset o argumento filter e uma lista para indicar as dimensoes do dataset que serao consultadas
 
-options(timeout = 120)                                        # Aumentar o intervalo maximo de busca na URL do dataset
+options(timeout = 180)                                        # Aumentar o intervalo maximo de busca na URL do dataset
 paises <- c('BRA', 'KOR')
 
 
@@ -45,3 +46,15 @@ for (i in 1:length(paises)){
 }
 
 
+
+# --- Extracao das dimencoes (Linhas-Colunas) das matrizes --- #
+# col_items <- unique(database[[1]][c(1)])
+# row_items <- unique(database[[1]][c(5)])
+
+  # Workbook
+  # wb <- createWorkbook(creator = 'pi')
+  # addWorksheet(wb = wb, sheetName = 'coluna')
+  # addWorksheet(wb = wb, sheetName = 'linha')
+  # writeData(wb = wb, sheet = 'coluna' , x = unique(database[[1]][c(1)]))
+  # writeData(wb = wb, sheet = 'linha' , x = unique(database[[1]][c(5)]))
+  # saveWorkbook(wb = wb, file = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/Dimensões.xlsx', overwrite = TRUE)
