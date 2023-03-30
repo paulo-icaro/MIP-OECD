@@ -23,6 +23,7 @@ library(OECD)                                                 # OECD API
 library(openxlsx)
 library(readxl)
 library(tidyverse)
+library(extrafont)                                            
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'
 path = 'D:/Backup - Icaro/Documentos/Repositórios/Projetos/MIP/MIP-OECD/'
 path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'
@@ -85,16 +86,34 @@ for (p in 1:length(paises)){
 dim_col <- unique(database[[1]][c(1)])
 dim_row <- unique(database[[1]][c(4)])    
 
-for (p in 1:length(paises)){
-  for (y in 1:45){
-    for (x in 1:45){
-      ggplot(data = database[[p]] %>% filter(COL %in% dim_col[x,1] & ROW %in% dim_row[y,1])) +
-      geom_line(aes(x = Time, y = ObsValue)) +
+
+# Em aes o argumento color e empregado de maneira nÃ£o usual.
+# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
+
+# font_import(): importa todas as fontes do sistema
+# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
+# windowsFonts(): para ver todos os tipos de fontes agora disponÃ­veis (por default o R sÃ³ possui Times New Roman, Arial e Courier New)
+# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+for (y in 1:45){
+  for (x in 1:45){
+    ggplot() +
+      geom_line(data = database[[1]] %>% filter(COL %in% dim_col[x,1] & ROW %in% dim_row[y,1]), 
+                aes(x = Time, y = ObsValue, color = 'Brazil'),
+                linetype = 'dashed',
+                size = .75) +
+      geom_line(data = database[[2]] %>% filter(COL %in% dim_col[x,1] & ROW %in% dim_row[y,1]), 
+                aes(x = Time, y = ObsValue, color = 'South Korea'),
+                linetype = 'dashed',
+                size = .75) +
+      scale_color_manual(breaks = c('Brazil', 'South Korea'),
+                         values = c('#45B39D', '#D35400'),
+                         labels(NULL))+
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('From ', dim_col[x,1], ' to ', dim_row[y,1])) +
-      theme_light()
-      
-    }
+      labs(title = paste0('From ', dim_row[x,1], ' to ', dim_col[y,1])) +
+      theme(title = element_text(family = 'Segoe UI', size = 10),
+            text = element_text(family = 'Segoe UI', face = 'italic'),
+            axis.title.y = element_text(size = 12 , margin = margin(r = 15)),
+            axis.title.x = element_text(size = 12, margin = margin(t = 15)))
   }
 }
 
@@ -110,4 +129,4 @@ for (p in 1:length(paises)){
 #addWorksheet(wb = wb, sheetName = 'linha')
 #writeData(wb = wb, sheet = 'coluna' , x = unique(database[[1]][c(1)]))
 #writeData(wb = wb, sheet = 'linha' , x = unique(database[[1]][c(5)]))
-#saveWorkbook(wb = wb, file = paste0(path, '/Dimens?es.xlsx'), overwrite = TRUE)
+#saveWorkbook(wb = wb, file = paste0(path, '/Dimens?es.xlsx'), overwrite = TRUE)
