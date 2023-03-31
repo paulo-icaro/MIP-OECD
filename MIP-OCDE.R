@@ -94,14 +94,14 @@ dim_row <- unique(database[[1]][c(4)])
 # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
 # windowsFonts(): para ver todos os tipos de fontes agora disponíveis (por default o R só possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-for (y in 1:45){
-  for (x in 1:45){
-    ggplot() +
-      geom_line(data = database[[1]] %>% filter(COL %in% dim_col[x,1] & ROW %in% dim_row[y,1]), 
+for (r in 1:2){
+  for (c in 1:2){
+    Plots <- ggplot() + 
+      geom_line(data = database[[1]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
                 aes(x = Time, y = ObsValue, color = 'Brazil'),
                 linetype = 'dashed',
                 size = .75) +
-      geom_line(data = database[[2]] %>% filter(COL %in% dim_col[x,1] & ROW %in% dim_row[y,1]), 
+      geom_line(data = database[[2]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
                 aes(x = Time, y = ObsValue, color = 'South Korea'),
                 linetype = 'dashed',
                 size = .75) +
@@ -109,11 +109,23 @@ for (y in 1:45){
                          values = c('#45B39D', '#D35400'),
                          labels(NULL))+
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('From ', dim_row[x,1], ' to ', dim_col[y,1])) +
-      theme(title = element_text(family = 'Segoe UI', size = 10),
-            text = element_text(family = 'Segoe UI', face = 'italic'),
-            axis.title.y = element_text(size = 12 , margin = margin(r = 15)),
-            axis.title.x = element_text(size = 12, margin = margin(t = 15)))
+      labs(title = 'Parameter Evolution',
+           subtitle = paste0('From ', dim_row[r,1], ' to ', dim_col[c,1]),
+           x = NULL,
+           y = 'Parameter') +
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),          # Textos do eixo x 
+            panel.background = element_rect(fill = '#F2F3F4')
+      )
+    
+    ggsave(path = paste0(path, '/Plots'),
+           filename = paste0('From ', dim_row[r,1], ' to ', dim_col[c,1], '.png'),
+           width = 3000,
+           height = 1300,
+           units = 'px'
+    )
   }
 }
 
