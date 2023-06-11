@@ -34,13 +34,14 @@ path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'
 # Na funcao get_dataset o argumento filter e uma lista para indicar as dimensoes do dataset que serao consultadas
 # Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
 
-options(timeout = 500)                                                          # Aumentar o intervalo maximo de busca na URL do dataset
-paises <- c('BRA', 'KOR')						                                            # Variavel com os nomes dos paises
-database <- vector(mode = 'list', length = length(paises))                      # Lista que recebera as databases
-perc_change_oecd <- data.frame(matrix(nrow = 48600))                            # Coluna que recebera as variacoes percentuais
-colnames(perc_change_oecd) <- c('perc_change')                                  # Nome da nova coluna
+options(timeout = 500)                                                                          # Aumentar o intervalo maximo de busca na URL do dataset
+paises <- c('BRA')#, 'KOR')						                                                          # Variavel com os nomes dos paises
+db_sectors <- vector(mode = 'list', length = length(paises))                                    # Lista que recebera as database dos setores
+db_output <- vector(mode = 'list', length = length(paises))                                     # Lista que recebera somente os dados dos outputs dos setores
+perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
+colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da nova coluna
 
-# Colunas e Linnhas cujas combinacoes serao desconsideradas
+# Colunas e Linhas cujas combinacoes serao desconsideradas
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 
@@ -51,10 +52,11 @@ for (p in 1:length(paises)){
                                  start_time = 1995,
                                  end_time = 2018)
   
-  database[[p]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))  # Remocao das combinacoes cujas variaveis nao serao de interesse
-  database[[p]] <- database[[p]] %>% mutate(perc_change_oecd)                                                    # Filtragem para reduzir o tamanho do dataset
-  database[[p]][c('ObsValue', 'Time')] <- sapply(database[[p]][c('ObsValue', 'Time')], as.numeric)            # Mudanca da tipagem das colunas especificadas para numeric
-  #if (p == length(paises)){rm(data_extraction)}                                                               # Liberando memoria quando o ultimo pais for avaliado
+  db_sectors[[p]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))    # Filtragem para reduzir o tamanho do dataset e remocao das combinacoes cujas variaveis nao serao de interesse
+  db_output[[p]] <- database[[p]]
+  #database[[p]] <- database[[p]] %>% mutate(perc_change_oecd)                                                   # Adição da coluna referente as variações percentuais
+  #database[[p]][c('ObsValue', 'Time')] <- sapply(database[[p]][c('ObsValue', 'Time')], as.numeric)              # Mudanca da tipagem das colunas especificadas para numeric
+  if (p == length(paises)){rm(data_extraction, database)}                                                                 # Liberando memoria quando o ultimo pais for avaliado
 }
 
 
