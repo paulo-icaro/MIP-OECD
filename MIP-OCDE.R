@@ -24,9 +24,9 @@ library(openxlsx)
 library(readxl)
 library(tidyverse)
 library(extrafont)                                            
-path = 'C:/Users/paulo.costa/Downloads/OCDE/'
-path = 'D:/Backup - Icaro/Documentos/Repositórios/Projetos/MIP/MIP-OECD/'
-path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'
+path = 'C:/Users/paulo.costa/Downloads/OCDE/'                                   # SDE
+path = 'D:/Backup - Icaro/Documentos/Repositórios/Projetos/MIP/MIP-OECD/'       # PC
+path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'           # Notebook
 
 # ----------------------- #
 # --- Data Extraction --- #
@@ -52,11 +52,11 @@ for (p in 1:length(paises)){
                                  start_time = 1995,
                                  end_time = 2018)
   
-  db_sectors[[p]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))    # Filtragem para reduzir o tamanho do dataset e remocao das combinacoes cujas variaveis nao serao de interesse
-  db_output[[p]] <- database[[p]]
-  #database[[p]] <- database[[p]] %>% mutate(perc_change_oecd)                                                   # Adição da coluna referente as variações percentuais
-  #database[[p]][c('ObsValue', 'Time')] <- sapply(database[[p]][c('ObsValue', 'Time')], as.numeric)              # Mudanca da tipagem das colunas especificadas para numeric
-  if (p == length(paises)){rm(data_extraction, database)}                                                                 # Liberando memoria quando o ultimo pais for avaliado
+  db_sectors[[p]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))    # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
+  db_output[[p]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT"))          # Database Output
+  #database[[p]] <- database[[p]] %>% mutate(perc_change_oecd)                                                     # Adição da coluna referente as variações percentuais
+  #database[[p]][c('ObsValue', 'Time')] <- sapply(database[[p]][c('ObsValue', 'Time')], as.numeric)                # Mudanca da tipagem das colunas especificadas para numeric
+  #if (p == length(paises)){rm(data_extraction)}                                                                   # Liberando memoria quando o ultimo pais for avaliado
 }
 
 
@@ -64,8 +64,6 @@ for (p in 1:length(paises)){
 # --------------------- #
 # --- Data Analysis --- #
 # --------------------- #
-
-
 
 
 # --- Percentage Changes --- #      
