@@ -45,6 +45,8 @@ perc_change_oecd <- data.frame(matrix(nrow = 48600))                            
 colnames(iot_coef) <- c('iot_coef')                                                             # Nome da coluna dos coeficientes
 colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
 
+
+
 # Colunas e Linhas cujas combinacoes serao desconsideradas
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
@@ -58,7 +60,9 @@ for (c in 1:length(countries)){
   
   data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                # Mudanca da tipagem das colunas especificadas para numeric
   db_sectors[[c]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))    # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
-  db_sectors[[c]] <- db_sectors[[c]] %>% mutate(iot_coef)
+  #db_sectors[[c]] <- db_sectors[[c]] %>% mutate(iot_coef)
+  db_sectors_matrix <- matrix(ncol = 45, nrow=45, dimnames = list(unique(db_sectors[[c]][c(4)]), unique(db_sectors[[c]][c(1)])))
+  db_sectors_matrix <- 
   db_output[[c]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT"))          # Database Output
   db_sectors[[c]] <- db_sectors[[c]] %>% mutate(db_output[[c]][3])
   
