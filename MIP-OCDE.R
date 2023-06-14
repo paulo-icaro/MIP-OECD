@@ -25,8 +25,10 @@ library(readxl)
 library(tidyverse)
 library(extrafont)                                            
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                      # SDE
-path = 'D:/Backup - Icaro/Documentos/Repositorios/MIP-OECD/'       # PC
-path = 'C:/Users/Paulo/Documents/Repositorios/MIP-OECD/'           # Notebook
+path = 'D:/Backup - Icaro/Documentos/'                             # PC
+path = 'C:/Users/Paulo/Documents/'                                  # Notebook
+source("Repositorios/RAIS/Função - code_time.R", encoding = 'LATIN1')   # Função que contabilizar o tempo do code
+
 
 # ----------------------- #
 # --- Data Extraction --- #
@@ -38,8 +40,13 @@ options(timeout = 500)                                                          
 countries <- c('BRA')#, 'KOR')						                                                      # Variavel com os nomes dos paises
 
 # Listas e colunas para armazenar dados tratados
+
+
+db_sectors <- vector(mode = 'list', length = length(countries))
+db_outputs <- vector(mode = 'list', length = length(countries))
 db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
-db_output_matrix <- vector(mode = 'list', length = length(24))                                  # Lista que recebera somente os dados dos outputs dos setores
+db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
+
 iot_coef <- data.frame(matrix(nrow = 48600))                                                    # Coluna que recebera os coeficientes da matriz
 perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
 colnames(iot_coef) <- c('iot_coef')                                                             # Nome da coluna dos coeficientes
@@ -49,29 +56,42 @@ colnames(perc_change_oecd) <- c('perc_change')                                  
 # Colunas e Linhas cujas combinacoes serao desconsideradas
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
-dim_row <- read_excel(path = paste0(path, 'Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
-dim_col <- read_excel(path = paste0(path, 'Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
+dim_row <- read_excel(path = paste0(path, 'Repositorios/MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
+dim_col <- read_excel(path = paste0(path, 'Repositorios/MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 
 # Extracao
+start_time <- Sys.time()
 for (c in 1:length(countries)){
   data_extraction <- get_dataset(dataset = "IOTS_2021",
                                  filter = list(c("TTL"), countries[c]),
                                  start_time = 1995,
                                  end_time = 2018)
-  data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                            # Mudanca da tipagem das colunas especificadas para numeric
+  data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
   
-  for (t in 1995:2018){
-    data_extraction_sectors <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == t))         # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
-    data_extraction_output <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == t))               # Database Output
+  # Este loop filtra os dados intersetoriais e de output por ano, os transforma em matriz e os armazenas em uma lista
+  # Desta maneira sera mais facil calcular os coeficientes tecnicos de cada matriz para cada ano
+  for (t in 1:24){
+    data_extraction_sectors <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
+    data_extraction_outputs <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == 1994+t))              # Database Outputs
     
-    db_sectors_matrix <- matrix(data = as.matrix(data_extraction_sectors[[c]][3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))
-    db_output_matrix <- matrix(data = as.matrix(data_extraction_output[[c]][3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))
+    db_sectors_matrix[[t]] <- matrix(data = as.matrix(data_extraction_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Database Intersetorial transformada em matriz e armazenada na lista
+    db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))             # Database Outputs transformada em matriz e armazenada na lista
+    
+    names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
+    names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
   }
   
-  #if (c == length(paises)){rm(data_extraction)}                                                                   # Liberando memoria quando o ultimo pais for avaliado
+  db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista Intersetorial com toda a serie temporal dentro da lista de países
+  db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista Outputs com toda a série temporal dentro da lista de países
+  
+  names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista Intersetorial de cada pais recebera o nome do pais respectivo
+  names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista Outputs de cada pais recebera o nome do pais respectivo
+  
+  if (c == length(countries)){rm(data_extraction, data_extraction_sectors, data_extraction_outputs, db_sectors_matrix, db_outputs_matrix)}                                                           # Liberando memoria quando o ultimo pais for avaliado
 }
-
+end_time <- Sys.time()
+code_time(start_time, end_time)                                                                                                                     # Cronometro
 
 
 # --------------------- #
