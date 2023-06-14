@@ -24,10 +24,11 @@ library(openxlsx)
 library(readxl)
 library(tidyverse)
 library(extrafont)                                            
-path = 'C:/Users/paulo.costa/Downloads/OCDE/'                      # SDE
-path = 'D:/Backup - Icaro/Documentos/'                             # PC
-path = 'C:/Users/Paulo/Documents/'                                  # Notebook
-source("Repositorios/RAIS/Função - code_time.R", encoding = 'LATIN1')   # Função que contabilizar o tempo do code
+path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
+path = 'D:/Backup - Icaro/Documentos/'                                  # PC
+path = 'C:/Users/Paulo/Documents/'                                      # Notebook
+source('Repositorios/RAIS/Função - code_time.R', encoding = 'LATIN1')   # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+
 
 
 # ----------------------- #
@@ -44,12 +45,13 @@ countries <- c('BRA')#, 'KOR')						                                            
 
 db_sectors <- vector(mode = 'list', length = length(countries))
 db_outputs <- vector(mode = 'list', length = length(countries))
+db_sectors_coef <- vector(mode = 'list', length = length(countries))
 db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
 db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
+db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))                            # Lista que recebera os coeficientes da MIP
 
-iot_coef <- data.frame(matrix(nrow = 48600))                                                    # Coluna que recebera os coeficientes da matriz
+
 perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
-colnames(iot_coef) <- c('iot_coef')                                                             # Nome da coluna dos coeficientes
 colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
 
 
@@ -76,19 +78,35 @@ for (c in 1:length(countries)){
     data_extraction_outputs <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == 1994+t))              # Database Outputs
     
     db_sectors_matrix[[t]] <- matrix(data = as.matrix(data_extraction_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Database Intersetorial transformada em matriz e armazenada na lista
-    db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))             # Database Outputs transformada em matriz e armazenada na lista
+    db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Database Outputs transformada em matriz e armazenada na lista
     
     names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
     names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
+    
+    for (i in 1:45){
+      if (i == 1){
+        db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]
+      }
+      else{
+        db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]))
+        if (i == 45){
+          colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)
+        }
+      }
+    }
+    
   }
   
-  db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista Intersetorial com toda a serie temporal dentro da lista de países
-  db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista Outputs com toda a série temporal dentro da lista de países
+  db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista intersetorial com toda a serie temporal dentro da lista de países
+  db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista de outputs com toda a série temporal dentro da lista de países
+  db_sectors_coef[[c]] <- db_sectors_coef_matrix                                                                                                    # Armazenamento da lista de coeficientes com toda a série temporal dentro da lista de países
   
-  names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista Intersetorial de cada pais recebera o nome do pais respectivo
-  names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista Outputs de cada pais recebera o nome do pais respectivo
+  names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista intersetorial de cada pais recebera o nome do pais respectivo
+  names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista de outputs de cada pais recebera o nome do pais respectivo
+  names(db_sectors_coef) <- countries[c]                                                                                                            # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
   
-  if (c == length(countries)){rm(data_extraction, data_extraction_sectors, data_extraction_outputs, db_sectors_matrix, db_outputs_matrix)}                                                           # Liberando memoria quando o ultimo pais for avaliado
+  # Liberando memoria quando o ultimo pais for avaliado
+  #if (c == length(countries)){rm(data_extraction, data_extraction_sectors, data_extraction_outputs, db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix)}
 }
 end_time <- Sys.time()
 code_time(start_time, end_time)                                                                                                                     # Cronometro
