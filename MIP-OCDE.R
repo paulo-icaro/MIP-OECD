@@ -24,9 +24,9 @@ library(openxlsx)
 library(readxl)
 library(tidyverse)
 library(extrafont)                                            
-path = 'C:/Users/paulo.costa/Downloads/OCDE/'                                   # SDE
-path = 'D:/Backup - Icaro/Documentos/Repositórios/Projetos/MIP/MIP-OECD/'       # PC
-path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'           # Notebook
+path = 'C:/Users/paulo.costa/Downloads/OCDE/'                      # SDE
+path = 'D:/Backup - Icaro/Documentos/Repositorios/MIP-OECD/'       # PC
+path = 'C:/Users/Paulo/Documents/Repositorios/MIP-OECD/'           # Notebook
 
 # ----------------------- #
 # --- Data Extraction --- #
@@ -35,46 +35,41 @@ path = 'C:/Users/Paulo/Documents/Repositórios/Projetos/MIP/MIP-OECD/'           
 # Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
 
 options(timeout = 500)                                                                          # Aumentar o intervalo maximo de busca na URL do dataset
-countries <- c('BRA')#, 'KOR')						                                                          # Variavel com os nomes dos paises
+countries <- c('BRA')#, 'KOR')						                                                      # Variavel com os nomes dos paises
 
 # Listas e colunas para armazenar dados tratados
-db_sectors <- vector(mode = 'list', length = length(countries))                                 # Lista que recebera as database dos setores
-db_output <- vector(mode = 'list', length = length(countries))                                  # Lista que recebera somente os dados dos outputs dos setores
+db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
+db_output_matrix <- vector(mode = 'list', length = length(24))                                  # Lista que recebera somente os dados dos outputs dos setores
 iot_coef <- data.frame(matrix(nrow = 48600))                                                    # Coluna que recebera os coeficientes da matriz
 perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
 colnames(iot_coef) <- c('iot_coef')                                                             # Nome da coluna dos coeficientes
 colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
 
 
-
 # Colunas e Linhas cujas combinacoes serao desconsideradas
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
+dim_row <- read_excel(path = paste0(path, 'Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
+dim_col <- read_excel(path = paste0(path, 'Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 
-
+# Extracao
 for (c in 1:length(countries)){
   data_extraction <- get_dataset(dataset = "IOTS_2021",
                                  filter = list(c("TTL"), countries[c]),
                                  start_time = 1995,
                                  end_time = 2018)
+  data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                            # Mudanca da tipagem das colunas especificadas para numeric
   
-  data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                # Mudanca da tipagem das colunas especificadas para numeric
-  db_sectors[[c]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row))    # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
-  #db_sectors[[c]] <- db_sectors[[c]] %>% mutate(iot_coef)
-  db_sectors_matrix <- matrix(ncol = 45, nrow=45, dimnames = list(unique(db_sectors[[c]][c(4)]), unique(db_sectors[[c]][c(1)])))
-  db_sectors_matrix <- 
-  db_output[[c]] <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT"))          # Database Output
-  db_sectors[[c]] <- db_sectors[[c]] %>% mutate(db_output[[c]][3])
   
-  for (i in 1:45){
-    for (j in 1:1080){
-        db_sectors[[c]]$iot_coef[(24*i)+1] <- db_sectors[[c]]$ObsValue[]
-        
-    }
+  for (t in 1995:2018){
+    data_extraction_sectors <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == t))         # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
+    data_extraction_output <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == t))               # Database Output
+    
+    db_sectors_matrix <- matrix(data = as.matrix(data_extraction_sectors[[c]][3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))
+    db_output_matrix <- matrix(data = as.matrix(data_extraction_output[[c]][3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))
   }
-  #database[[p]] <- database[[p]] %>% mutate(perc_change_oecd)                                                     # Adição da coluna referente as variações percentuais
   
-  #if (p == length(paises)){rm(data_extraction)}                                                                   # Liberando memoria quando o ultimo pais for avaliado
+  #if (c == length(paises)){rm(data_extraction)}                                                                   # Liberando memoria quando o ultimo pais for avaliado
 }
 
 
@@ -105,12 +100,12 @@ dim_col <- unique(database[[1]][c(1)])
 dim_row <- unique(database[[1]][c(4)])    
 
 
-# Em aes o argumento color e empregado de maneira nÃ£o usual.
+# Em aes o argumento color e empregado de maneira nao usual.
 # Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
 
 # font_import(): importa todas as fontes do sistema
 # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
-# windowsFonts(): para ver todos os tipos de fontes agora disponÃ­veis (por default o R sÃ³ possui Times New Roman, Arial e Courier New)
+# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
 for (r in 1:2){
   for (c in 1:2){
