@@ -25,9 +25,9 @@ library(readxl)
 library(tidyverse)
 library(extrafont)                                            
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
-path = 'D:/Backup - Icaro/Documentos/'                                  # PC
-path = 'C:/Users/Paulo/Documents/'                                      # Notebook
-source('Repositorios/RAIS/Função - code_time.R', encoding = 'LATIN1')   # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
+path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
+source('RAIS/Função - code_time.R', encoding = 'LATIN1')   # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -41,15 +41,12 @@ options(timeout = 500)                                                          
 countries <- c('BRA')#, 'KOR')						                                                      # Variavel com os nomes dos paises
 
 # Listas e colunas para armazenar dados tratados
-
-
 db_sectors <- vector(mode = 'list', length = length(countries))
 db_outputs <- vector(mode = 'list', length = length(countries))
 db_sectors_coef <- vector(mode = 'list', length = length(countries))
 db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
 db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
 db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))                            # Lista que recebera os coeficientes da MIP
-
 
 perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
 colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
@@ -58,12 +55,12 @@ colnames(perc_change_oecd) <- c('perc_change')                                  
 # Colunas e Linhas cujas combinacoes serao desconsideradas
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
-dim_row <- read_excel(path = paste0(path, 'Repositorios/MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
-dim_col <- read_excel(path = paste0(path, 'Repositorios/MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
+dim_row <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
+dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 
 # Extracao
 start_time <- Sys.time()
-for (c in 1:length(countries)){
+for (c in length(countries)){
   data_extraction <- get_dataset(dataset = "IOTS_2021",
                                  filter = list(c("TTL"), countries[c]),
                                  start_time = 1995,
@@ -80,20 +77,19 @@ for (c in 1:length(countries)){
     db_sectors_matrix[[t]] <- matrix(data = as.matrix(data_extraction_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Database Intersetorial transformada em matriz e armazenada na lista
     db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Database Outputs transformada em matriz e armazenada na lista
     
-    names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
-    names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
-    
     for (i in 1:45){
       if (i == 1){
         db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]
       }
       else{
         db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]))
-        if (i == 45){
-          colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)
-        }
+        if (i == 45){colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)}
       }
     }
+    
+    names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
+    names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
+    names(db_sectors_coef_matrix)[t] <- 1994+t
     
   }
   
@@ -115,6 +111,38 @@ code_time(start_time, end_time)                                                 
 # --------------------- #
 # --- Data Analysis --- #
 # --------------------- #
+
+
+# --- Eigenvalues --- #
+for (c in length(countries)){
+  for (t in 1:24){
+    if (t == 1){
+      eigenvalues <- eigen(db_sectors_coef[[c]][[t]])$values
+    }
+    
+    else{
+      eigenvalues <- cbind(eigenvalues, eigen(db_sectors_coef[[c]][[t]])$values) 
+      if(t == 24){colnames(eigenvalues) <- (1994 + 1:24)}
+    }
+  }
+}
+
+
+# --- Savings --- #
+alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')
+
+for (c in countries){
+  for (a in 1:4){
+    wb <- createWorkbook(creator = 'pi')
+    
+    for (t in 1:24){
+      addWorksheet(wb = wb, sheetName = paste0(alias[a], t))
+      writeData(wb = wb, sheet = paste0('mip_sectors', t), x = 1)
+    }
+    
+    saveWorkbook(wb = wb, file = paste0(path, '/Dimens?es.xlsx'), overwrite = TRUE)
+  }
+}
 
 
 # --- Percentage Changes --- #      
