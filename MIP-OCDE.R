@@ -27,7 +27,8 @@ library(extrafont)
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
 path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
 path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
-source('RAIS/Função - code_time.R', encoding = 'LATIN1')   # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+setwd(path)
+source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -99,7 +100,7 @@ for (c in length(countries)){
   
   names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista intersetorial de cada pais recebera o nome do pais respectivo
   names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista de outputs de cada pais recebera o nome do pais respectivo
-  names(db_sectors_coef) <- countries[c]                                                                                                            # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
+  names(db_sectors_coef)[c] <- countries[c]                                                                                                            # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
   
   # Liberando memoria quando o ultimo pais for avaliado
   #if (c == length(countries)){rm(data_extraction, data_extraction_sectors, data_extraction_outputs, db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix)}
@@ -114,38 +115,49 @@ code_time(start_time, end_time)                                                 
 
 
 # --- Eigenvalues --- #
+eigenvalues <- vector(mode = 'list', length = length(countries))
 for (c in length(countries)){
   for (t in 1:24){
     if (t == 1){
-      eigenvalues <- eigen(db_sectors_coef[[c]][[t]])$values
+      eigenvalues[[c]] <- eigen(db_sectors_coef[[c]][[t]])$values
     }
     
     else{
-      eigenvalues <- cbind(eigenvalues, eigen(db_sectors_coef[[c]][[t]])$values) 
-      if(t == 24){colnames(eigenvalues) <- (1994 + 1:24)}
+      eigenvalues[[c]] <- cbind(eigenvalues[[c]], eigen(db_sectors_coef[[c]][[t]])$values) 
+      if(t == 24){colnames(eigenvalues[[c]]) <- (1994 + 1:24)}
     }
   }
+  names(eigenvalues)[c] <- countries[c]
 }
 
 
 # --- Savings --- #
 alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')
+db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues)
+names(db) <- alias
 
 for (c in countries){
-  for (a in 1:4){
+  for (i in 1:4){
     wb <- createWorkbook(creator = 'pi')
     
-    for (t in 1:24){
-      addWorksheet(wb = wb, sheetName = paste0(alias[a], t))
-      writeData(wb = wb, sheet = paste0('mip_sectors', t), x = 1)
+    if (i != 4){
+      for (t in 1:24){
+        addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
+        writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
+      }
     }
     
-    saveWorkbook(wb = wb, file = paste0(path, '/Dimens?es.xlsx'), overwrite = TRUE)
+    if (i == 4){
+      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_1995_2018'))
+      writeData(wb = wb, sheet = paste0(alias[i], '_1995_2018'), x = db[[i]][[c]], rowNames = TRUE)
+    }
+    
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', alias[i], '.xlsx'), overwrite = TRUE)
   }
 }
 
 
-# --- Percentage Changes --- #      
++# --- Percentage Changes --- #      
 # Obs: ja foi incluido o salvamento dos dados analisados
 #wb_perc_change  = createWorkbook(creator = 'pi')
 for (p in 1:length(paises)){
