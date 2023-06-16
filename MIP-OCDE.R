@@ -9,6 +9,7 @@
 # Link com a estrutura do dataset: https://stats.oecd.org/restsdmx/sdmx.ashx/GetDataStructure/IOTS_2021
 # Link onde os dados sao consultados: https://stats.oecd.org/restsdmx/sdmx.ashx/GetData/IOTS_2021
 # Link para as matrizes no site da OCDE: https://stats.oecd.org/
+# Link como commitar alterações direto no R: https://r-bio.github.io/intro-git-rstudio/
 
 # Obs:
 # Aparentemente, diferente de outras bases, nao da para visualizar essa no navegador devido ao limite
