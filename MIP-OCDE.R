@@ -42,52 +42,68 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 options(timeout = 500)                                                                          # Aumentar o intervalo maximo de busca na URL do dataset
 countries <- c('BRA')#, 'KOR')						                                                      # Variavel com os nomes dos paises
 
-# Listas e colunas para armazenar dados tratados
-db_sectors <- vector(mode = 'list', length = length(countries))
-db_outputs <- vector(mode = 'list', length = length(countries))
-db_sectors_coef <- vector(mode = 'list', length = length(countries))
-db_added_value <- vector(mode = 'list', length = length(countries))
-db_final_demand <- vector(mode = 'list', length = length(countries))
+# Listas e colunas para armazenar dados tratados #
+  
+  # Lista superiores (por pais)
+  db_sectors <- vector(mode = 'list', length = length(countries))
+  db_outputs <- vector(mode = 'list', length = length(countries))
+  db_sectors_coef <- vector(mode = 'list', length = length(countries))
+  #db_added_value <- vector(mode = 'list', length = length(countries))
+  #db_final_demand <- vector(mode = 'list', length = length(countries))
+
+  # Listas inferiores (por ano)
+  db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
+  db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
+  db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))                            # Lista que recebera os coeficientes da MIP
+  #db_added_value_matrix <- vector(mode = 'list', length = length(24))
+  #db_final_demand_matrix <- vector(mode = 'list', length = length(24))
+  
+  #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
+  #colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
 
 
-db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
-db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
-db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))                            # Lista que recebera os coeficientes da MIP
-db_added_value_matrix <- vector(mode = 'list', length = length(24))
-db_final_demand_matrix <- vector(mode = 'list', length = length(24))
-
-#perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
-#colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
-
-
-# Colunas e Linhas cujas combinacoes serao desconsideradas
+# Colunas e Linhas cujas combinacoes serao desconsideradas #
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 dim_row <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
 dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 
-# Extracao
+# Extracao #
 #start_time <- Sys.time()
 for (c in length(countries)){
-  data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
+  #data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
   data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
+
   
   # Este loop filtra os dados intersetoriais e de output por ano, os transforma em matriz e os armazenas em uma lista
   # Desta maneira sera mais facil calcular os coeficientes tecnicos de cada matriz para cada ano
   for (t in 1:24){
-    data_extraction_sectors <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Intersetorial // Remocao das combinacoes cujas variaveis nao serao de interesse
+    data_extraction_sectors <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     data_extraction_outputs <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == 1994+t))              # Database Outputs
-    data_extraction_added_value <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))
-    data_extraction_final_demand <- data_extraction[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))
+    #data_extraction_added_value <- data_extraction[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
+    #data_extraction_final_demand <- data_extraction[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))    # Database Final Demand
     
     
-    db_sectors_matrix[[t]] <- matrix(data = as.matrix(data_extraction_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Database Intersetorial transformada em matriz e armazenada na lista
-    db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Database Outputs transformada em matriz e armazenada na lista
-    db_added_value_matrix[[t]] <- matrix(data = as.matrix(data_extraction_added_value[3]), nrow = 5 , ncol = 45)
-    db_final_demand_matrix[[t]] <- matrix(data = as.matrix(data_extraction_final_demand[3]), nrow = 45 , ncol = 9)
+    for (k in 1:2025){
+      if (data_extraction_sectors[3][k,1] == 0){ 
+        data_extraction_sectors[3][k,1] <-  1/(10^10)
+      }
+    }
     
-    db_sectors_matrix[[t]][c(45),] = db_sectors_matrix[[t]][,c(45)] <- 1/(10^10)                                                                    # Colocando valores bem próximos de 0 para evitar problemas
+    for (k in 1:45){
+      if (data_extraction_outputs[3][k,1] == 0){ 
+        data_extraction_outputs[3][k,1] <-  1/(10^10)
+      }
+    }
+    
+    
+    db_sectors_matrix[[t]] <- matrix(data = as.matrix(data_extraction_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Lista de matrizes: Sectors
+    db_outputs_matrix[[t]] <- matrix(data = as.matrix(data_extraction_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Lista de matrizes: Outputs
+    #db_added_value_matrix[[t]] <- matrix(data = as.matrix(data_extraction_added_value[3]), nrow = 5 , ncol = 45)                                   # Lista de matrizes: Added Values
+    #db_final_demand_matrix[[t]] <- matrix(data = as.matrix(data_extraction_final_demand[3]), nrow = 45 , ncol = 9)                                 # Lista de matrizes: Final Demand
+    
+    #db_sectors_matrix[[t]][c(45),] = db_sectors_matrix[[t]][,c(45)] <- 1/(10^10)                                                                    # Colocando valores bem próximos de 0 para evitar problemas
     
     for (i in 1:45){
       if (i == 1){
@@ -102,28 +118,31 @@ for (c in length(countries)){
     names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
     names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
     names(db_sectors_coef_matrix)[t] <- 1994+t
-    names(db_added_value_matrix)[t] <- 1994+t
-    names(db_final_demand_matrix)[t] <- 1994+t
+    #names(db_added_value_matrix)[t] <- 1994+t
+    #names(db_final_demand_matrix)[t] <- 1994+t
     
   }
   
   db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista intersetorial com toda a serie temporal dentro da lista de países
   db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista de outputs com toda a série temporal dentro da lista de países
   db_sectors_coef[[c]] <- db_sectors_coef_matrix                                                                                                    # Armazenamento da lista de coeficientes com toda a série temporal dentro da lista de países
-  db_added_value[[c]] <- db_added_value_matrix
-  db_final_demand[[c]] <- db_final_demand_matrix
+  #db_added_value[[c]] <- db_added_value_matrix
+  #db_final_demand[[c]] <- db_final_demand_matrix
   
   names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista intersetorial de cada pais recebera o nome do pais respectivo
   names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista de outputs de cada pais recebera o nome do pais respectivo
   names(db_sectors_coef)[c] <- countries[c]                                                                                                         # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
-  names(db_added_value)[c] <- countries[c]
-  names(db_final_demand)[c] <- countries[c]
+  #names(db_added_value)[c] <- countries[c]
+  #names(db_final_demand)[c] <- countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
   #if (c == length(countries)){rm(data_extraction, data_extraction_sectors, data_extraction_outputs, db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix)}
 }
 #end_time <- Sys.time()
 #code_time(start_time, end_time)                                                                                                                     # Cronometro
+
+
+
 
 
 # --------------------- #
@@ -150,12 +169,12 @@ for (c in length(countries)){
 
 # --- Savings --- #
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues', 'mip_added_values', 'mip_final_demand')
+alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_added_values', 'mip_final_demand')
 db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues, db_added_value, db_final_demand)
 names(db) <- alias
 
 for (c in countries){
-  for (i in 1:6){
+  for (i in 1:length(alias)){
     wb <- createWorkbook(creator = 'pi')
     
     if (i != 4){
