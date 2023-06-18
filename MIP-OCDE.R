@@ -71,7 +71,7 @@ dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "c
 # Extracao #
 #start_time <- Sys.time()
 for (c in length(countries)){
-  #data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
+  data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
   data_extraction[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
 
@@ -222,38 +222,44 @@ dim_row <- unique(database[[1]][c(4)])
 # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
 # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-for (r in 1:2){
-  for (c in 1:2){
-    Plots <- ggplot() + 
-      geom_line(data = database[[1]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
-                aes(x = Time, y = ObsValue, color = 'Brazil'),
-                linetype = 'dashed',
-                size = .75) +
-      geom_line(data = database[[2]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
-                aes(x = Time, y = ObsValue, color = 'South Korea'),
-                linetype = 'dashed',
-                size = .75) +
-      scale_color_manual(breaks = c('Brazil', 'South Korea'),
-                         values = c('#45B39D', '#D35400'),
-                         labels(NULL))+
-      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = 'Parameter Evolution',
-           subtitle = paste0('From ', dim_row[r,1], ' to ', dim_col[c,1]),
-           x = NULL,
-           y = 'Parameter') +
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),          # Textos do eixo x 
-            panel.background = element_rect(fill = '#F2F3F4')
+for (c in length(countries)){
+  for (i in 1:45){
+    for (j in 1:45){
+      for (t in 1:24){if (t == 1) {w = db_sectors[[c]][[t]][i:i,j:j]} else {w <- rbind(w, db_sectors[[c]][[t]][i:i,j:j])}}
+      Plots <- ggplot() + 
+        geom_line(data = as.data.frame(x = w),
+                  #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
+                  aes(x = 1995:2018, y = w, color = 'Brazil'),
+                  linetype = 'dashed',
+                  size = .75) +
+        #geom_line(data = database[[2]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
+        #aes(x = Time, y = ObsValue, color = 'South Korea'),
+        #linetype = 'dashed',
+        #size = .75) +
+        geom_point() +
+        geom_text(label = as.data.frame(x = w), nudge_x = 0.25, nudge_y = 0.25) +
+        scale_color_manual(breaks = c('Brazil'),#, 'South Korea'),
+                           values = c('#45B39D'),#, '#D35400'),
+                           labels(NULL)) +
+        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+        labs(title = 'Parameter Evolution',
+             subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
+             x = NULL,
+             y = 'Parameter') +
+        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),          # Textos do eixo x 
+              panel.background = element_rect(fill = '#F2F3F4')
+        )
+      
+      ggsave(path = paste0(path, 'MIP-OECD/Plots'),
+             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
       )
-    
-    ggsave(path = paste0(path, '/Plots'),
-           filename = paste0('From ', dim_row[r,1], ' to ', dim_col[c,1], '.png'),
-           width = 3000,
-           height = 1300,
-           units = 'px'
-    )
+    }
   }
 }
 
