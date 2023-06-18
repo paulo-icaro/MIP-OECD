@@ -223,9 +223,9 @@ dim_row <- unique(database[[1]][c(4)])
 # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
 for (c in length(countries)){
-  for (i in 1:45){
-    for (j in 1:45){
-      for (t in 1:24){if (t == 1) {w = db_sectors[[c]][[t]][i:i,j:j]} else {w <- rbind(w, db_sectors[[c]][[t]][i:i,j:j])}}
+  for (i in 1:5){
+    for (j in 1:5){
+      for (t in 1:24){if (t == 1) {w = db_sectors_coef[[c]][[t]][i:i,j:j]} else {w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])}}
       Plots <- ggplot() + 
         geom_line(data = as.data.frame(x = w),
                   #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
@@ -236,8 +236,7 @@ for (c in length(countries)){
         #aes(x = Time, y = ObsValue, color = 'South Korea'),
         #linetype = 'dashed',
         #size = .75) +
-        geom_point() +
-        geom_text(label = as.data.frame(x = w), nudge_x = 0.25, nudge_y = 0.25) +
+        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
         scale_color_manual(breaks = c('Brazil'),#, 'South Korea'),
                            values = c('#45B39D'),#, '#D35400'),
                            labels(NULL)) +
@@ -254,6 +253,13 @@ for (c in length(countries)){
         )
       
       ggsave(path = paste0(path, 'MIP-OECD/Plots'),
+             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
+      )
+      
+      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots'),
              filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
              width = 3000,
              height = 1300,
