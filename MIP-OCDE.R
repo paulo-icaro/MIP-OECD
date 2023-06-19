@@ -176,14 +176,14 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
   }
   
   for (c in length(countries)){
-    for (i in 1:1){
+    for (i in 1:45){
       w = matrix(data = eigenvalues[[c]][i,], nrow = 24, ncol = 1)
       Plots <- ggplot() +
-              geom_line(data = as.data.frame(x = w), aes(x = 'Time', y = w, color = 'Brazil'), linetype = 'dashed', linewidth = .75) +
+              geom_line(data = as.data.frame(x = w), aes(x = 1995:2018, y = w, color = 'Brazil'), linetype = 'dashed', linewidth = .75) +
               geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
               scale_color_manual(breaks = c('Brazil'), values = c('#45B39D'), labels(NULL)) +
               scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-              labs(title = paste0('Eigenvalue #', i, 'Evolution'), x = NULL, y = 'Parameter') +
+              labs(title = paste0('Time Evolution: Eigenvalue #', i), x = NULL, y = 'Parameter') +
               theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),           # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
                 axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
                 axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
@@ -192,6 +192,8 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
               )
       
               ggsave(path = paste0(path, 'MIP-OECD/Plots/Autovalores'), filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
+              ggsave(path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Autovalores', filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
+              
     }
   }
 
