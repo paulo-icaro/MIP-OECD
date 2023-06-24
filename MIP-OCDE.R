@@ -25,7 +25,8 @@ library(OECD)                                                 # OECD API
 library(openxlsx)
 library(readxl)
 library(tidyverse)
-library(extrafont)                                            
+library(extrafont) 
+library(ggrepel)
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
 path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
 path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
@@ -204,6 +205,10 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
   pca_scores <- pca$x
   pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
   
+  
+  pca_scores_df <- as.data.frame(pca_scores)
+  pca_variance_explained_df <- as.data.frame(pca_variance_explained)
+  
   pca_variance_explained_plot <- 
     ggplot() +
     geom_col(data = as.data.frame(pca_variance_explained), aes(y = pca_variance_explained*100 , x = 1:45)) + 
@@ -211,9 +216,10 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
   
   #plot(pca_variance_explained, type = "b", xlab = "Componente Principal", ylab = "Variância Explicada", main = "Análise de Componentes Principais - Variância Explicada")
   
-  ggplot() +
+  pca_scatterplot <- ggplot() +
     geom_point(data = as.data.frame(pca_scores), aes(x = PC1, y = PC2)) + 
-    geom_label(label = rownames(as.data.frame(pca_scores)), nudge_x = 0.25, nudge_y = 0.25)
+    geom_text_repel(aes(label = rownames(as.data.frame(pca_scores)), x = as.data.frame(pca_scores)$PC1, y = as.data.frame(pca_scores)$PC2), box.padding   = 0.35, point.padding = 0.5, segment.color = 'grey50')
+    #geom_label(label = rownames(as.data.frame(pca_scores)), nudge_x = 0.25, nudge_y = 0.25)
   
   plot(pca_scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
   for (i in 2:ncol(pca_scores)) {
