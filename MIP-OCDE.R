@@ -199,6 +199,28 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 
 
 
+# --- PCA Analysis --- #
+  pca <- prcomp(x = t(db_sectors[[1]][[1]]))
+  pca_scores <- pca$x
+  pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+  
+  pca_variance_explained_plot <- 
+    ggplot() +
+    geom_col(data = as.data.frame(pca_variance_explained), aes(y = pca_variance_explained*100 , x = 1:45)) + 
+    labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
+  
+  #plot(pca_variance_explained, type = "b", xlab = "Componente Principal", ylab = "Variância Explicada", main = "Análise de Componentes Principais - Variância Explicada")
+  
+  ggplot() +
+    geom_point(data = as.data.frame(pca_scores), aes(x = PC1, y = PC2)) + 
+    geom_label(label = rownames(as.data.frame(pca_scores)), nudge_x = 0.25, nudge_y = 0.25)
+  
+  plot(pca_scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
+  for (i in 2:ncol(pca_scores)) {
+    lines(pca_scores[, i], col = i)
+  }
+  
+  
   
 # --- Percentage Changes --- #      
 # Obs: ja foi incluido o salvamento dos dados analisados.
