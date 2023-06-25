@@ -158,7 +158,9 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 # --------------------- #
 # --- Data Analysis --- #
 # --------------------- #
+  
 
+  
 # --- Eigenvalues --- #
   eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
   
@@ -202,29 +204,35 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 
 
 # --- PCA Analysis --- #
-  pca <- prcomp(x = t(db_sectors[[1]][[1]]))
+  pca <- prcomp(x = db_sectors[[1]][[1]])
   pca_scores <- pca$x
   pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+  pca_loadings <- pca$rotation
   
   
-  pca_scores_df <- as.data.frame(pca_scores_df[c(-6, -10, -11), c(1,2)])
+  pca_scores_df <- as.data.frame(pca_scores)#[c(-6, -10, -11), c(1,2)])
   pca_variance_explained_df <- as.data.frame(pca_variance_explained)
+  pca_loadings_df <- as.data.frame(pca_loadings)
   
   pca_variance_explained_plot <- 
     ggplot() +
     geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
     labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
+  pca_variance_explained_plot
   
-  ggplotly(pca_variance_explained_plot)
-  
-  #plot(pca_variance_explained, type = "b", xlab = "Componente Principal", ylab = "Variância Explicada", main = "Análise de Componentes Principais - Variância Explicada")
-  
-  pca_scatterplot <- ggplot() +
-    geom_point(data = pca_scores_df, aes(x = PC1, y = PC2)) + 
-    #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50')
-    geom_text(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 1, nudge_y = 1)
-  
-  ggplotly(pca_scatterplot)
+  pca_biplot <-
+    ggplot() +
+    geom_point(data = pca_scores_df*0.0001, aes(x = PC1, y = PC2)) +
+    #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
+    geom_text(aes(label = rownames(pca_scores_df), x = (pca_scores_df*0.0001)$PC1, y = (pca_scores_df*0.0001)$PC2), nudge_x = 0.05, nudge_y = 0.05) +                                                            # Use este comando para caso deseje usar o ggplotly        
+    geom_segment(data = pca_loadings_df, aes(x = 0, y = 0, xend = PC1, yend = PC2))
+    #geom_abline(intercept = 0, slope = pca_loadings_df$PC2/pca_loadings_df$PC1) +
+    #scale_y_continuous(sec.axis = sec_axis(~.*(0.0001), name = 'Eixo y secundário')) + 
+    #scale_x_continuous(sec.axis = sec_axis(~.*(0.0001), name = 'Eixo x secundário'))
+  #Graficos dinamicos
+  #ggplotly(pca_variance_explained_plot)
+  #ggplotly(pca_biplot)
+  pca_biplot
   
   plot(pca_scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
   for (i in 2:ncol(pca_scores)) {
