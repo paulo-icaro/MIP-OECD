@@ -27,6 +27,7 @@ library(readxl)
 library(tidyverse)
 library(extrafont) 
 library(ggrepel)
+library(plotly)
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
 path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
 path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
@@ -206,25 +207,37 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
   pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
   
   
-  pca_scores_df <- as.data.frame(pca_scores)
+  pca_scores_df <- as.data.frame(pca_scores_df[c(-6, -10, -11), c(1,2)])
   pca_variance_explained_df <- as.data.frame(pca_variance_explained)
   
   pca_variance_explained_plot <- 
     ggplot() +
-    geom_col(data = as.data.frame(pca_variance_explained), aes(y = pca_variance_explained*100 , x = 1:45)) + 
+    geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
     labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
+  
+  ggplotly(pca_variance_explained_plot)
   
   #plot(pca_variance_explained, type = "b", xlab = "Componente Principal", ylab = "Variância Explicada", main = "Análise de Componentes Principais - Variância Explicada")
   
   pca_scatterplot <- ggplot() +
-    geom_point(data = as.data.frame(pca_scores), aes(x = PC1, y = PC2)) + 
-    geom_text_repel(aes(label = rownames(as.data.frame(pca_scores)), x = as.data.frame(pca_scores)$PC1, y = as.data.frame(pca_scores)$PC2), box.padding   = 0.35, point.padding = 0.5, segment.color = 'grey50')
-    #geom_label(label = rownames(as.data.frame(pca_scores)), nudge_x = 0.25, nudge_y = 0.25)
+    geom_point(data = pca_scores_df, aes(x = PC1, y = PC2)) + 
+    #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50')
+    geom_text(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 1, nudge_y = 1)
+  
+  ggplotly(pca_scatterplot)
   
   plot(pca_scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
   for (i in 2:ncol(pca_scores)) {
     lines(pca_scores[, i], col = i)
   }
+  
+  ggplotly() + 
+  biplot(pca, scale = 0)
+  
+  
+  # Gráfico de correlação entre as variáveis originais e os componentes principais
+  correlation <- cor(db_sectors[[1]][[1]], pca_scores)
+  plot(correlation, xlab = "Variáveis Originais", ylab = "Componentes Principais", main = "Análise de Componentes Principais - Correlação")
   
   
   
