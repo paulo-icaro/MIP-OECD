@@ -222,10 +222,11 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
   
   pca_biplot <-
     ggplot() +
-    geom_point(data = pca_scores_df*0.0001, aes(x = PC1, y = PC2)) +
+    geom_point(data = pca_scores_df*0.0001, aes(x = PC1, y = PC2), colour = '#00FF9E') +
+    geom_segment(data = pca_loadings_df, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
     #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
-    geom_text(aes(label = rownames(pca_scores_df), x = (pca_scores_df*0.0001)$PC1, y = (pca_scores_df*0.0001)$PC2), nudge_x = 0.05, nudge_y = 0.05) +                                                            # Use este comando para caso deseje usar o ggplotly        
-    geom_segment(data = pca_loadings_df, aes(x = 0, y = 0, xend = PC1, yend = PC2))
+    geom_label(aes(label = rownames(pca_scores_df), x = (pca_scores_df*0.0001)$PC1, y = (pca_scores_df*0.0001)$PC2), nudge_x = 0.05, nudge_y = 0.05, label.size = 0.01) +                                                  # Use este comando para caso deseje usar o ggplotly        
+    geom_label(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df)$PC1, y = (pca_loadings_df)$PC2), nudge_x = 0.05, nudge_y = 0.05, label.size = 0.01)                                                          # Use este comando para caso deseje usar o ggplotly        
     #geom_abline(intercept = 0, slope = pca_loadings_df$PC2/pca_loadings_df$PC1) +
     #scale_y_continuous(sec.axis = sec_axis(~.*(0.0001), name = 'Eixo y secundário')) + 
     #scale_x_continuous(sec.axis = sec_axis(~.*(0.0001), name = 'Eixo x secundário'))
