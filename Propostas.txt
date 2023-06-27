@@ -1,0 +1,47 @@
+# Exemplo de matriz de séries temporais econômicas
+A <- matrix(runif(100), nrow = 10, ncol = 10)  # Substitua pelos seus dados
+
+# Realizando a análise de componentes principais (PCA)
+pca <- prcomp(A)
+
+# Obtendo os valores dos componentes principais
+scores <- pca$x
+
+# Gráfico de variância explicada pelos componentes principais
+variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+plot(variance_explained, type = "b", xlab = "Componente Principal", ylab = "Variância Explicada", main = "Análise de Componentes Principais - Variância Explicada")
+
+# Gráfico de scores dos componentes principais
+plot(scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
+for (i in 2:ncol(scores)) {
+  lines(scores[, i], col = i)
+}
+
+# Gráfico de correlação entre as variáveis originais e os componentes principais
+correlation <- cor(A, scores)
+plot(correlation, xlab = "Variáveis Originais", ylab = "Componentes Principais", main = "Análise de Componentes Principais - Correlação")
+
+# Scree plot dos autovalores
+scree_plot <- pca$sdev^2
+plot(scree_plot, type = "b", xlab = "Componente Principal", ylab = "Autovalor", main = "Análise de Componentes Principais - Scree Plot")
+
+# Contribuição das variáveis originais nos componentes principais
+contributions <- abs(pca$rotation)  # Calcula as contribuições absolutas
+barplot(t(contributions), beside = TRUE, legend.text = TRUE, xlab = "Componente Principal", ylab = "Contribuição", main = "Análise de Componentes Principais - Contribuição das Variáveis")
+
+# Biplot (gráfico de scores e loadings)
+biplot(pca, scale = 0)
+
+
+
+Nessa rotina, utilizamos a função prcomp para realizar a análise de componentes principais (PCA). Em seguida, realizamos várias análises gráficas relacionadas à PCA.
+
+Os gráficos incluídos são:
+
+Gráfico de variância explicada pelos componentes principais, mostrando a proporção de variância explicada por cada componente principal.
+Gráfico dos scores dos componentes principais ao longo do tempo, mostrando a evolução dos scores para cada componente principal.
+Gráfico de correlação entre as variáveis originais e os componentes principais, mostrando a relação entre as variáveis originais e os componentes principais.
+Scree plot dos autovalores, mostrando a importância relativa de cada autovalor.
+Gráfico das contribuições das variáveis originais nos componentes principais, mostrando a importância relativa de cada variável original em cada componente principal.
+Biplot, que mostra a relação entre os scores e os loadings dos componentes principais em um único gráfico.
+Esses gráficos podem ajudar a visualizar e interpretar os resultados da análise de componentes principais em sua matriz de séries temporais econômicas.
