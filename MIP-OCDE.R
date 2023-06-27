@@ -112,8 +112,8 @@ countries = c('BRA')
 # Loop Principal - Filtragem por Pais #
 #start_time <- Sys.time()
 for (c in 1:length(countries)){
-  database <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
-  database[c('ObsValue', 'Time')] <- sapply(data_extraction[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
+  database <- read_excel(path = paste0(path, 'MIP-OECD/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
+  database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
   # Loop Secundario - Filtragem por Ano #
   for (t in 1:24){
@@ -238,45 +238,57 @@ for (c in length(countries)){
 
 
 # --- PCA Analysis --- #
-pca <- prcomp(x = db_sectors[[1]][[1]])
-pca_scores <- pca$x
-pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
-pca_loadings <- pca$rotation
+for (c in 1:length(countries)){
+  for (t in 1:24){
+  pca <- prcomp(x = db_sectors[[c]][[t]])
+  pca_scores <- pca$x
+  pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+  pca_loadings <- pca$rotation
 
 
-pca_scores_df <- as.data.frame(pca_scores)#[c(-6, -10, -11), c(1,2)])
-pca_variance_explained_df <- as.data.frame(pca_variance_explained)
-pca_loadings_df <- as.data.frame(pca_loadings)
-rm(pca_scores, pca_variance_explained, pca_loadings)
+  pca_scores_df <- as.data.frame(pca_scores[c(-1), c(1,2)])
+  pca_variance_explained_df <- as.data.frame(pca_variance_explained)
+  pca_loadings_df <- as.data.frame(pca_loadings)
+  rm(pca_scores, pca_variance_explained, pca_loadings)
 
-pca_variance_explained_plot <- 
-  ggplot() +
-  geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
-  labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
-pca_variance_explained_plot
+  pca_variance_explained_plot <- 
+    ggplot() +
+    geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
+    labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
+  
+  ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Variânca Explicada'),
+         filename = paste0('Variancia_Explicada_PCA_', countries[c], '_', 1994+t,'.png'),
+         width = 3000,
+         height = 1300,
+         units = 'px'
+  )
+  
 
-pca_biplot <-
-  ggplot() +
-  geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
-  geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
-  #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
-  geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                  # Use este comando para caso deseje usar o ggplotly        
-  geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                                                         # Use este comando para caso deseje usar o ggplotly        
-  #geom_abline(intercept = 0, slope = pca_loadings_df$PC2/pca_loadings_df$PC1) +
-  scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
-  scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
-#Graficos dinamicos
-#ggplotly(pca_variance_explained_plot)
-#ggplotly(pca_biplot)
-pca_biplot
+  pca_biplot <-
+    ggplot() +
+    geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
+    geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
+    #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
+    geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
+    geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
+    scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
+    scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
 
-plot(pca_scores[, 1], type = "l", xlab = "Tempo", ylab = "Score", main = "Análise de Componentes Principais - Componente Principal 1")
-for (i in 2:ncol(pca_scores)) {
-  lines(pca_scores[, i], col = i)
+  ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
+         filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
+         width = 3000,
+         height = 1500,
+         units = 'px'
+  )
+  
+  
+  
+  #Graficos dinamicos
+  #ggplotly(pca_variance_explained_plot)
+  #ggplotly(pca_biplot)
+  #pca_biplot
+  }
 }
-
-ggplotly() + 
-  biplot(pca, scale = 0)
 
 
 # Gráfico de correlação entre as variáveis originais e os componentes principais
