@@ -45,32 +45,32 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 # Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
 
 # Aumentar o intervalo maximo de busca na URL do dataset
-options(timeout = 500000)            
-
-# Variavel com os nomes dos paises
-# Lista com nomes dos países por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
-countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
-               'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
-               'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',
-               'LVA', 'LTU', 'LUX', 'MEX', 'NLD', 'NZL', 'NOR',
-               'POL', 'PRT', 'SVK', 'SVN', 'ESP', 'SWE', 'CHE',
-               'TUR', 'GBR', 'USA', 'ARG', 'BRA', 'BRN', 'BGR',
-               'KHM', 'CHN', 'HRV', 'CYP', 'IND', 'IDN', 'HKG',
-               'KAZ', 'LAO', 'MYS', 'MLT', 'MAR', 'MMR', 'PER',
-               'PHL', 'ROU', 'RUS', 'SAU', 'SGP', 'ZAF', 'TWN',
-               'THA', 'TUN', 'VNM')
-
-# --- Extracao --- #
-start_time <- Sys.time()
-wb <- createWorkbook(creator = 'pi')
-for (c in 1:length(countries)){
-  data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
-  addWorksheet(wb = wb, sheetName = paste0(countries[c]))
-  writeData(wb = wb, sheet = paste0(countries[c]), x = data_extraction)
-}
-saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', 'Database_IOTS_Countries.xlsx'), overwrite = TRUE)
-end_time <- Sys.time()
-code_time(start_time, end_time)
+# options(timeout = 500000)            
+# 
+# # Variavel com os nomes dos paises
+# # Lista com nomes dos países por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
+# countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
+#                'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
+#                'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',
+#                'LVA', 'LTU', 'LUX', 'MEX', 'NLD', 'NZL', 'NOR',
+#                'POL', 'PRT', 'SVK', 'SVN', 'ESP', 'SWE', 'CHE',
+#                'TUR', 'GBR', 'USA', 'ARG', 'BRA', 'BRN', 'BGR',
+#                'KHM', 'CHN', 'HRV', 'CYP', 'IND', 'IDN', 'HKG',
+#                'KAZ', 'LAO', 'MYS', 'MLT', 'MAR', 'MMR', 'PER',
+#                'PHL', 'ROU', 'RUS', 'SAU', 'SGP', 'ZAF', 'TWN',
+#                'THA', 'TUN', 'VNM')
+# 
+# # --- Extracao --- #
+# start_time <- Sys.time()
+# wb <- createWorkbook(creator = 'pi')
+# for (c in 1:length(countries)){
+#   data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
+#   addWorksheet(wb = wb, sheetName = paste0(countries[c]))
+#   writeData(wb = wb, sheet = paste0(countries[c]), x = data_extraction)
+# }
+# saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', 'Database_IOTS_Countries.xlsx'), overwrite = TRUE)
+# end_time <- Sys.time()
+# code_time(start_time, end_time)
 
 
 
@@ -213,27 +213,27 @@ for (c in length(countries)){
   names(eigenvalues)[c] <- countries[c]
 }
 
-for (c in length(countries)){
-  for (i in 1:45){
-    w = matrix(data = eigenvalues[[c]][i,], nrow = 24, ncol = 1)
-    Plots <- ggplot() +
-      geom_line(data = as.data.frame(x = w), aes(x = 1995:2018, y = w, color = 'Brazil'), linetype = 'dashed', linewidth = .75) +
-      geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-      scale_color_manual(breaks = c('Brazil'), values = c('#45B39D'), labels(NULL)) +
-      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('Time Evolution: Eigenvalue #', i), x = NULL, y = 'Parameter') +
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),           # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
-            panel.background = element_rect(fill = '#F2F3F4')
-      )
-    
-    ggsave(path = paste0(path, 'MIP-OECD/Plots/Autovalores'), filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
-    ggsave(path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Autovalores', filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
-    
-  }
-}
+# for (c in length(countries)){
+#   for (i in 1:45){
+#     w = matrix(data = eigenvalues[[c]][i,], nrow = 24, ncol = 1)
+#     Plots <- ggplot() +
+#       geom_line(data = as.data.frame(x = w), aes(x = 1995:2018, y = w, color = 'Brazil'), linetype = 'dashed', linewidth = .75) +
+#       geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
+#       scale_color_manual(breaks = c('Brazil'), values = c('#45B39D'), labels(NULL)) +
+#       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+#       labs(title = paste0('Time Evolution: Eigenvalue #', i), x = NULL, y = 'Parameter') +
+#       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),           # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+#             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+#             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+#             axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
+#             panel.background = element_rect(fill = '#F2F3F4')
+#       )
+#     
+#     ggsave(path = paste0(path, 'MIP-OECD/Plots/Autovalores'), filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
+#     ggsave(path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Autovalores', filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
+#     
+#   }
+# }
 
 
 
