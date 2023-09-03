@@ -28,11 +28,17 @@ library(tidyverse)
 library(extrafont) 
 library(ggrepel)
 library(plotly)
+
+
+# --- Paths --- #
 path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
 path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
 path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
 setwd(path)
+
+# --- Funcao Cronometro --- #
 source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+
 
 
 
@@ -71,6 +77,8 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 # saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', 'Database_IOTS_Countries.xlsx'), overwrite = TRUE)
 # end_time <- Sys.time()
 # code_time(start_time, end_time)
+
+
 
 
 
@@ -194,7 +202,6 @@ for (c in 1:length(countries)){
 # --------------------- #
 
 
-
 # --- Eigenvalues --- #
 eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
 
@@ -213,6 +220,7 @@ for (c in length(countries)){
   names(eigenvalues)[c] <- countries[c]
 }
 
+# --- Plots - Eigenvalues --- #
 # for (c in length(countries)){
 #   for (i in 1:45){
 #     w = matrix(data = eigenvalues[[c]][i,], nrow = 24, ncol = 1)
@@ -264,22 +272,23 @@ for (c in 1:length(countries)){
   )
   
 
-  pca_biplot <-
-    ggplot() +
-    geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
-    geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
-    #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
-    geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
-    geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
-    scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
-    scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
-
-  ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
-         filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
-         width = 3000,
-         height = 1500,
-         units = 'px'
-  )
+# --- Plots - PCA Analysis --- #
+  # pca_biplot <-
+  #   ggplot() +
+  #   geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
+  #   geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
+  #   #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
+  #   geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
+  #   geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
+  #   scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
+  #   scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
+  # 
+  # ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
+  #        filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
+  #        width = 3000,
+  #        height = 1500,
+  #        units = 'px'
+  # )
   
   
   
@@ -317,7 +326,7 @@ for (c in length(countries)){
 # --- Savings --- #
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
 alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_added_values', 'mip_final_demand')
-db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues, db_added_value, db_final_demand)
+db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues)#, db_added_value, db_final_demand)
 names(db) <- alias
 
 for (c in countries){
@@ -353,10 +362,19 @@ dim_row <- unique(database[[1]][c(4)])
 # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
 # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-for (c in length(countries)){
-  for (i in 1:5){
-    for (j in 1:5){
-      for (t in 1:24){if (t == 1) {w = db_sectors_coef[[c]][[t]][i:i,j:j]} else {w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])}}
+for (c in length(countries)){                                                               # c para pais
+  for (i in 1:5){                                                                           # i para linha
+    for (j in 1:5){                                                                         # j para coluna
+      for (t in 1:24){                                                                      # t para o ano
+        if (t == 1) {
+          #w = db_sectors_coef[[c]][[t]][i:i,j:j]                                            # Gerar plot da serie de coeficientes
+          w = db_sector[[c]][[t]][i:i,j:j]                                                  # Gerar plot da serie de valores da MIP
+          } 
+        else {
+          #w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
+          w = rbind(w, db_sectors[[c]][[t]][i:i,j:j])
+          }
+        }
       Plots <- ggplot() + 
         
         # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
