@@ -87,6 +87,7 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 # ---------------- #
 
 # --- Listas e colunas para armazenar dados tratados --- #
+countries = c('BRA')
 
 # Lista superiores (por pais)
 db_sectors <- vector(mode = 'list', length = length(countries))
@@ -111,11 +112,13 @@ remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONR
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 dim_row <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
 dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
+# dim_row <- unique(database[[1]]) 
+# dim_col <- unique(database[[1]])
+
 
 
 
 # --- Preparacao da Database --- #
-countries = c('BRA')      
 
 # Loop Principal - Filtragem por Pais #
 #start_time <- Sys.time()
@@ -197,9 +200,9 @@ for (c in 1:length(countries)){
 
 
 
-# --------------------- #
-# --- Data Analysis --- #
-# --------------------- #
+# ------------------------------- #
+# --- Data Analysis and Plots --- #
+# ------------------------------- #
 
 
 # --- Eigenvalues --- #
@@ -323,6 +326,133 @@ for (c in length(countries)){
 
 
 
+# --- Plots - Coeficientes --- #
+   
+
+# Em aes o argumento color e empregado de maneira nao usual.
+# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
+
+# font_import(): importa todas as fontes do sistema
+# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
+# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
+# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+start_time <- Sys.time()
+for (c in length(countries)){                                                               # c para pais
+  for (i in 1:45){                                                                           # i para linha
+    for (j in 1:45){                                                                         # j para coluna
+      for (t in 1:24){                                                                      # t para o ano
+        if (t == 1) {
+          w = db_sectors_coef[[c]][[t]][i:i,j:j]                                           # Gerar plot da serie de coeficientes
+          } 
+        else {
+          w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
+          }
+        }
+      Plots <- ggplot() + 
+        
+        # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
+        geom_line(data = as.data.frame(x = w),
+                  #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
+                  aes(x = 1995:2018, y = w, color = 'Brazil'),
+                  linetype = 'dashed',
+                  size = .75) +
+        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
+        scale_color_manual(breaks = c('Brazil'),#, 'South Korea'),
+                           values = c('#45B39D'),#, '#D35400'),
+                           labels(NULL)) +
+        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+        labs(title = 'Coeficient Evolution',
+             subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
+             x = NULL,
+             y = 'Coeficient') +
+        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
+              panel.background = element_rect(fill = '#F2F3F4')
+        )
+      
+      ggsave(path = paste0(path, 'MIP-OECD/Plots/Coeficientes'),
+             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
+      )
+      
+      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Coeficientes'),
+             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
+      )
+    }
+  }
+}
+end_time <- Sys.time()
+code_time(start_time, end_time)
+
+
+
+
+
+# --- Plots - Outputs --- #
+start_time <- Sys.time()
+for (c in length(countries)){                                                             # c para pais
+  for (j in 1:45){                                                                        # j para coluna
+    for (t in 1:24){                                                                      # t para o ano
+      if (t == 1) {
+        w = db_outputs[[c]][[t]][,j]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
+      } 
+      else {
+        w = rbind(w, db_outputs[[c]][[t]][,j])
+      }
+    }
+    Plots <- ggplot() + 
+        
+        # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
+        geom_line(data = as.data.frame(x = w),
+                  #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
+                  aes(x = 1995:2018, y = w),
+                  linetype = 'dashed',
+                  size = .75) +
+        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
+        scale_color_manual(breaks = NULL,
+                           values = c('#45B39D'),#, '#D35400'),
+                           labels(NULL)) +
+        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+        labs(title = paste0('Output Evolution (', dim_col[j,1], ')'),
+             #subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
+             x = NULL,
+             y = 'Output') +
+        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
+              panel.background = element_rect(fill = '#F2F3F4')
+        )
+      
+      ggsave(path = paste0(path, 'MIP-OECD/Plots/Produtos'),                                      # Não esqueça de mudar o path ao salvar
+             filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
+      )
+      
+      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Produtos'),
+             filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
+             width = 3000,
+             height = 1300,
+             units = 'px'
+      )
+  }
+}
+end_time <- Sys.time()
+code_time(start_time, end_time)
+
+
+
+
+
 # --- Savings --- #
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
 alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_added_values', 'mip_final_demand')
@@ -348,74 +478,6 @@ for (c in countries){
     saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', alias[i], '.xlsx'), overwrite = TRUE)
   }
 }
-
-
-
-# --- Plots --- #
-dim_col <- unique(database[[1]][c(1)])
-dim_row <- unique(database[[1]][c(4)])    
-
-# Em aes o argumento color e empregado de maneira nao usual.
-# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
-
-# font_import(): importa todas as fontes do sistema
-# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
-# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
-# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-for (c in length(countries)){                                                               # c para pais
-  for (i in 1:5){                                                                           # i para linha
-    for (j in 1:5){                                                                         # j para coluna
-      for (t in 1:24){                                                                      # t para o ano
-        if (t == 1) {
-          #w = db_sectors_coef[[c]][[t]][i:i,j:j]                                            # Gerar plot da serie de coeficientes
-          w = db_sector[[c]][[t]][i:i,j:j]                                                  # Gerar plot da serie de valores da MIP
-          } 
-        else {
-          #w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
-          w = rbind(w, db_sectors[[c]][[t]][i:i,j:j])
-          }
-        }
-      Plots <- ggplot() + 
-        
-        # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
-        geom_line(data = as.data.frame(x = w),
-                  #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
-                  aes(x = 1995:2018, y = w, color = 'Brazil'),
-                  linetype = 'dashed',
-                  size = .75) +
-        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-        scale_color_manual(breaks = c('Brazil'),#, 'South Korea'),
-                           values = c('#45B39D'),#, '#D35400'),
-                           labels(NULL)) +
-        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-        labs(title = 'Parameter Evolution',
-             subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
-             x = NULL,
-             y = 'Parameter') +
-        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
-              panel.background = element_rect(fill = '#F2F3F4')
-        )
-      
-      ggsave(path = paste0(path, 'MIP-OECD/Plots/Coeficientes'),
-             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
-      )
-      
-      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots'),
-             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
-      )
-    }
-  }
-}
-
 
 
 # --- Extracao das dimencoes (Linhas-Colunas) das matrizes --- #
