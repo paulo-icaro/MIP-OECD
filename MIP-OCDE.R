@@ -21,7 +21,6 @@
 # ----------------- #
 # --- Libraries --- #
 # ----------------- #
-library(OECD)                                                 # OECD API
 library(openxlsx)
 library(readxl)
 library(tidyverse)
@@ -31,52 +30,12 @@ library(plotly)
 
 
 # --- Paths --- #
-path = 'C:/Users/paulo.costa/Downloads/OCDE/'                           # SDE
 path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
 path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
 setwd(path)
 
 # --- Funcao Cronometro --- #
 source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
-
-
-
-
-
-# ----------------------- #
-# --- Data Extraction --- #
-# ----------------------- #
-
-# Na funcao get_dataset o argumento filter e uma lista para indicar as dimensoes do dataset que serao consultadas
-# Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
-
-# Aumentar o intervalo maximo de busca na URL do dataset
-# options(timeout = 500000)            
-# 
-# # Variavel com os nomes dos paises
-# # Lista com nomes dos países por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
-# countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
-#                'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
-#                'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',
-#                'LVA', 'LTU', 'LUX', 'MEX', 'NLD', 'NZL', 'NOR',
-#                'POL', 'PRT', 'SVK', 'SVN', 'ESP', 'SWE', 'CHE',
-#                'TUR', 'GBR', 'USA', 'ARG', 'BRA', 'BRN', 'BGR',
-#                'KHM', 'CHN', 'HRV', 'CYP', 'IND', 'IDN', 'HKG',
-#                'KAZ', 'LAO', 'MYS', 'MLT', 'MAR', 'MMR', 'PER',
-#                'PHL', 'ROU', 'RUS', 'SAU', 'SGP', 'ZAF', 'TWN',
-#                'THA', 'TUN', 'VNM')
-# 
-# # --- Extracao --- #
-# start_time <- Sys.time()
-# wb <- createWorkbook(creator = 'pi')
-# for (c in 1:length(countries)){
-#   data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
-#   addWorksheet(wb = wb, sheetName = paste0(countries[c]))
-#   writeData(wb = wb, sheet = paste0(countries[c]), x = data_extraction)
-# }
-# saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', 'Database_IOTS_Countries.xlsx'), overwrite = TRUE)
-# end_time <- Sys.time()
-# code_time(start_time, end_time)
 
 
 
@@ -90,18 +49,23 @@ source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função
 countries = c('BRA')
 
 # Lista superiores (por pais)
-db_sectors <- vector(mode = 'list', length = length(countries))
-db_outputs <- vector(mode = 'list', length = length(countries))
-db_sectors_coef <- vector(mode = 'list', length = length(countries))
-#db_added_value <- vector(mode = 'list', length = length(countries))
-#db_final_demand <- vector(mode = 'list', length = length(countries))
+db_sectors =
+  db_outputs =
+  db_sectors_coef =
+  db_value_added =
+  db_final_demand =
+  db_int_cons =
+  db_household  <- vector(mode = 'list', length = length(countries)) 
+
 
 # Listas inferiores (por ano)
-db_sectors_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera as database dos setores
-db_outputs_matrix <- vector(mode = 'list', length = length(24))                                 # Lista que recebera somente os dados dos outputs dos setores
-db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))                            # Lista que recebera os coeficientes da MIP
-#db_added_value_matrix <- vector(mode = 'list', length = length(24))
-#db_final_demand_matrix <- vector(mode = 'list', length = length(24))
+db_sectors_matrix =
+  db_outputs_matrix =
+  db_sectors_coef_matrix =
+  db_value_added_matrix =
+  db_final_demand_matrix =
+  db_int_cons_matrix = 
+  db_household_matrix <- vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
 #colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
@@ -110,8 +74,8 @@ db_sectors_coef_matrix <- vector(mode = 'list', length = length(24))            
 # Colunas e Linhas cujas combinacoes serao desconsideradas #
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
-dim_row <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
-dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
+dim_row <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
+dim_col <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 # dim_row <- unique(database[[1]]) 
 # dim_col <- unique(database[[1]])
 
@@ -123,15 +87,17 @@ dim_col <- read_excel(path = paste0(path, 'MIP-OECD/Dimensões.xlsx'), sheet = "c
 # Loop Principal - Filtragem por Pais #
 #start_time <- Sys.time()
 for (c in 1:length(countries)){
-  database <- read_excel(path = paste0(path, 'MIP-OECD/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
+  database <- read_excel(path = paste0(path, 'MIP_OECD/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
   database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
   # Loop Secundario - Filtragem por Ano #
   for (t in 1:24){
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
-    database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == "OUTPUT") & (Time == 1994+t))              # Database Outputs
-    #database_added_value <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
+    database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
+    #database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
     #database_final_demand <- database[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))    # Database Final Demand
+    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Total Intermediate Consumption
+    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time = 1994+t))                 # Database Final Consumption Expenditure of Households
     
     
     # Tratando possiveis valores nulos
@@ -151,8 +117,10 @@ for (c in 1:length(countries)){
     # Armazenamento os dados temporais filtrados em listas
     db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Lista de matrizes: Sectors
     db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Lista de matrizes: Outputs
-    #db_added_value_matrix[[t]] <- matrix(data = as.matrix(database_added_value[3]), nrow = 5 , ncol = 45)                                   # Lista de matrizes: Added Values
+    #db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 5 , ncol = 45)                                   # Lista de matrizes: Added Values
     #db_final_demand_matrix[[t]] <- matrix(data = as.matrix(database_final_demand[3]), nrow = 45 , ncol = 9)                                 # Lista de matrizes: Final Demand
+    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45)                                           # Lista de matrizes: Intermediate Consumption
+    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 45, ncol = 1)
     
     # Loop para calcular e armazenar os coeficientes
     for (i in 1:45){
@@ -170,8 +138,10 @@ for (c in 1:length(countries)){
     names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
     names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
     names(db_sectors_coef_matrix)[t] <- 1994+t
-    #names(db_added_value_matrix)[t] <- 1994+t
+    #names(db_value_added_matrix)[t] <- 1994+t
     #names(db_final_demand_matrix)[t] <- 1994+t
+    names(db_int_cons_matrix)[t] <- 1994+t
+    names(db_household_matrix)[t] <- 1994+t
     
   }
   
@@ -179,19 +149,24 @@ for (c in 1:length(countries)){
   db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista intersetorial com toda a serie temporal dentro da lista de países
   db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista de outputs com toda a série temporal dentro da lista de países
   db_sectors_coef[[c]] <- db_sectors_coef_matrix                                                                                                    # Armazenamento da lista de coeficientes com toda a série temporal dentro da lista de países
-  #db_added_value[[c]] <- db_added_value_matrix
+  #db_value_added[[c]] <- db_value_added_matrix
   #db_final_demand[[c]] <- db_final_demand_matrix
+  db_int_cons[[c]] <- db_int_cons_matrix
+  db_household[[c]] <- db_household_matrix
   
   
   # Renomeando os elementos da lista de paises
   names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista intersetorial de cada pais recebera o nome do pais respectivo
   names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista de outputs de cada pais recebera o nome do pais respectivo
   names(db_sectors_coef)[c] <- countries[c]                                                                                                         # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
-  #names(db_added_value)[c] <- countries[c]
+  #names(db_value_added)[c] <- countries[c]
   #names(db_final_demand)[c] <- countries[c]
+  names(db_int_cons)[c] <- countries[c]
+  names(db_household)[c] <- countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
-  if (c == length(countries)){rm(database, database_sectors, database_outputs, db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix)}
+  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_final_demand, database_int_cons, database_household,
+                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix,  db_value_added_matrix, db_final_demand_matrix, db_int_cons_matrix, db_household_matrix)}
 }
 #end_time <- Sys.time()
 #code_time(start_time, end_time)                                                                                                                    # Cronometro
@@ -204,6 +179,12 @@ for (c in 1:length(countries)){
 # --- Data Analysis and Plots --- #
 # ------------------------------- #
 
+
+# --- Evolução - Produto Agrícola, Consumo Intermediário e Componentes da Demanda ---- #
+
+for (t in 1:24){
+  
+}
 
 # --- Eigenvalues --- #
 eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
@@ -327,15 +308,13 @@ for (c in length(countries)){
 
 
 # --- Plots - Coeficientes --- #
-   
 
-# Em aes o argumento color e empregado de maneira nao usual.
-# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
-
-# font_import(): importa todas as fontes do sistema
-# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
-# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
-# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+  # Em aes o argumento color e empregado de maneira nao usual.
+  # Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
+  # font_import(): importa todas as fontes do sistema
+  # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
+  # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
+  # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
 start_time <- Sys.time()
 for (c in length(countries)){                                                               # c para pais
   for (i in 1:45){                                                                           # i para linha
@@ -453,10 +432,13 @@ code_time(start_time, end_time)
 
 
 
+# --------------- #
 # --- Savings --- #
+# --------------- #
+
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_added_values', 'mip_final_demand')
-db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues)#, db_added_value, db_final_demand)
+alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_value_addeds', 'mip_final_demand')
+db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues)#, db_value_added, db_final_demand)
 names(db) <- alias
 
 for (c in countries){
