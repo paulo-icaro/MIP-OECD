@@ -97,7 +97,7 @@ for (c in 1:length(countries)){
     #database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
     #database_final_demand <- database[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))    # Database Final Demand
     database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Total Intermediate Consumption
-    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time = 1994+t))                 # Database Final Consumption Expenditure of Households
+    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))                 # Database Final Consumption Expenditure of Households
     
     
     # Tratando possiveis valores nulos
@@ -120,7 +120,7 @@ for (c in 1:length(countries)){
     #db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 5 , ncol = 45)                                   # Lista de matrizes: Added Values
     #db_final_demand_matrix[[t]] <- matrix(data = as.matrix(database_final_demand[3]), nrow = 45 , ncol = 9)                                 # Lista de matrizes: Final Demand
     db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45)                                           # Lista de matrizes: Intermediate Consumption
-    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 45, ncol = 1)
+    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_row))
     
     # Loop para calcular e armazenar os coeficientes
     for (i in 1:45){
