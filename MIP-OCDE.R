@@ -55,7 +55,11 @@ db_sectors =
   db_value_added =
   db_final_demand =
   db_int_cons =
-  db_household  <- vector(mode = 'list', length = length(countries)) 
+  db_household =
+  db_government =
+  db_exports =
+  db_imports =
+  vector(mode = 'list', length = length(countries)) 
 
 
 # Listas inferiores (por ano)
@@ -65,7 +69,11 @@ db_sectors_matrix =
   db_value_added_matrix =
   db_final_demand_matrix =
   db_int_cons_matrix = 
-  db_household_matrix <- vector(mode = 'list', length = length(24))
+  db_household_matrix =
+  db_government_matrix = 
+  db_exports_matrix =
+  db_imports_matrix =
+  vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
 #colnames(perc_change_oecd) <- c('perc_change')                                                  # Nome da coluna das variacoes percentuais
@@ -97,7 +105,10 @@ for (c in 1:length(countries)){
     #database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
     #database_final_demand <- database[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))    # Database Final Demand
     database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Total Intermediate Consumption
-    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))                 # Database Final Consumption Expenditure of Households
+    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Final Consumption Expenditure of Households
+    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database 
+    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database 
+    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database 
     
     
     # Tratando possiveis valores nulos
@@ -121,6 +132,10 @@ for (c in 1:length(countries)){
     #db_final_demand_matrix[[t]] <- matrix(data = as.matrix(database_final_demand[3]), nrow = 45 , ncol = 9)                                 # Lista de matrizes: Final Demand
     db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45)                                           # Lista de matrizes: Intermediate Consumption
     db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_row))
+    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_row))
+    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_row))
+    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_row))
+  
     
     # Loop para calcular e armazenar os coeficientes
     for (i in 1:45){
@@ -134,39 +149,50 @@ for (c in 1:length(countries)){
     }
     
     
-    # Renomeando os elementos da lista temporal
-    names(db_sectors_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Intersetorial recebera a data referente ao ano da matriz
-    names(db_outputs_matrix)[t] <- 1994+t                                                                                                           # Cada elemento da lista Outputs recebera a data referente ao ano da matriz
-    names(db_sectors_coef_matrix)[t] <- 1994+t
-    #names(db_value_added_matrix)[t] <- 1994+t
-    #names(db_final_demand_matrix)[t] <- 1994+t
-    names(db_int_cons_matrix)[t] <- 1994+t
-    names(db_household_matrix)[t] <- 1994+t
+    # Renomeando os elementos da lista temporal. Cada elemento da lista recebera a data referente ao ano da matriz
+    names(db_sectors_matrix)[t] =
+    names(db_outputs_matrix)[t] =
+    names(db_sectors_coef_matrix)[t] =
+    #names(db_value_added_matrix)[t] =
+    #names(db_final_demand_matrix)[t] =
+    names(db_int_cons_matrix)[t] =
+    names(db_household_matrix)[t] =
+    names(db_government_matrix)[t] =
+    names(db_exports_matrix)[t] =
+    names(db_imports_matrix)[t] =
+    (1994+t)
     
   }
   
-  # Armazenamento das listas dentro da lista de paises
-  db_sectors[[c]] <- db_sectors_matrix                                                                                                              # Armazenamento da lista intersetorial com toda a serie temporal dentro da lista de países
-  db_outputs[[c]] <- db_outputs_matrix                                                                                                              # Armazenamento da lista de outputs com toda a série temporal dentro da lista de países
-  db_sectors_coef[[c]] <- db_sectors_coef_matrix                                                                                                    # Armazenamento da lista de coeficientes com toda a série temporal dentro da lista de países
+  # Armazenamento das listas dentro da lista de paises. 
+  db_sectors[[c]] <- db_sectors_matrix
+  db_outputs[[c]] <- db_outputs_matrix
+  db_sectors_coef[[c]] <- db_sectors_coef_matrix
   #db_value_added[[c]] <- db_value_added_matrix
   #db_final_demand[[c]] <- db_final_demand_matrix
   db_int_cons[[c]] <- db_int_cons_matrix
   db_household[[c]] <- db_household_matrix
+  db_government[[c]] <- db_government_matrix
+  db_exports[[c]] <- db_exports_matrix
+  db_imports[[c]] <- db_imports_matrix
   
   
-  # Renomeando os elementos da lista de paises
-  names(db_sectors)[c] <- countries[c]                                                                                                              # Cada lista intersetorial de cada pais recebera o nome do pais respectivo
-  names(db_outputs)[c] <- countries[c]                                                                                                              # Cada lista de outputs de cada pais recebera o nome do pais respectivo
-  names(db_sectors_coef)[c] <- countries[c]                                                                                                         # Cada lista de coeficientes de cada pais recebera o nome do pais respectivo
-  #names(db_value_added)[c] <- countries[c]
-  #names(db_final_demand)[c] <- countries[c]
-  names(db_int_cons)[c] <- countries[c]
-  names(db_household)[c] <- countries[c]
+  # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
+  names(db_sectors)[c] =
+  names(db_outputs)[c] =
+  names(db_sectors_coef)[c] =
+  #names(db_value_added)[c] =
+  #names(db_final_demand)[c] =
+  names(db_int_cons)[c] =
+  names(db_household)[c] =
+  names(db_government)[c] =
+  names(db_exports)[c] =
+  names(db_imports)[c] =
+  countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
-  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_final_demand, database_int_cons, database_household,
-                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix,  db_value_added_matrix, db_final_demand_matrix, db_int_cons_matrix, db_household_matrix)}
+  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_final_demand, database_int_cons, database_household, database_government, database_exports, database_imports,
+                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix,  db_value_added_matrix, db_final_demand_matrix, db_int_cons_matrix, db_household_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)}
 }
 #end_time <- Sys.time()
 #code_time(start_time, end_time)                                                                                                                    # Cronometro
