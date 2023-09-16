@@ -53,9 +53,9 @@ db_sectors =
   db_outputs =
   db_sectors_coef =
   db_value_added =
-  db_final_demand =
   db_int_cons =
   db_household =
+  db_investment =
   db_government =
   db_exports =
   db_imports =
@@ -67,9 +67,9 @@ db_sectors_matrix =
   db_outputs_matrix =
   db_sectors_coef_matrix =
   db_value_added_matrix =
-  db_final_demand_matrix =
   db_int_cons_matrix = 
   db_household_matrix =
+  db_investment_matrix = 
   db_government_matrix = 
   db_exports_matrix =
   db_imports_matrix =
@@ -102,13 +102,13 @@ for (c in 1:length(countries)){
   for (t in 1:24){
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
-    #database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW %in% remove_row) & (Time == 1994+t))     # Database Added Value
-    #database_final_demand <- database[c(1,2,3,5,7)] %>% filter((COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))    # Database Final Demand
-    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Total Intermediate Consumption
-    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Final Consumption Expenditure of Households
-    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database 
-    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database 
-    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database 
+    database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))            # Database Added Value
+    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Intermediate Consumption
+    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Households Consumption
+    database_investment <- database[c(1,2,3,5,7)] %>% filter((COL == 'GFCF') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Investment
+    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Government
+    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Exports
+    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Imports
     
     
     # Tratando possiveis valores nulos
@@ -125,17 +125,17 @@ for (c in 1:length(countries)){
     # }
     
     
-    # Armazenamento os dados temporais filtrados em listas
-    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))            # Lista de matrizes: Sectors
-    db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))            # Lista de matrizes: Outputs
-    #db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 5 , ncol = 45)                                   # Lista de matrizes: Added Values
-    #db_final_demand_matrix[[t]] <- matrix(data = as.matrix(database_final_demand[3]), nrow = 45 , ncol = 9)                                 # Lista de matrizes: Final Demand
-    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45)                                           # Lista de matrizes: Intermediate Consumption
-    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_row))
-    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_row))
-    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_row))
-    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_row))
-  
+    # Armazenamento das matrizes de dados temporais filtrados em listas
+    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))                       # Sectors
+    db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))                       # Outputs
+    db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 1 , ncol = 45, dimnames = c('Value Added', dim_col))         # Added Values
+    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45, dimnames = c("Intermediate Consumption", dim_col))   # Intermediate Consumption
+    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_row))                # Households Consumption
+    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 1, ncol = 45, dimnames = c("Investment", dim_row))             # Investment
+    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_row))             # Government
+    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_row))                      # Exports
+    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_row))                      # Imports
+    
     
     # Loop para calcular e armazenar os coeficientes
     for (i in 1:45){
@@ -151,27 +151,28 @@ for (c in 1:length(countries)){
     
     # Renomeando os elementos da lista temporal. Cada elemento da lista recebera a data referente ao ano da matriz
     names(db_sectors_matrix)[t] =
-    names(db_outputs_matrix)[t] =
-    names(db_sectors_coef_matrix)[t] =
-    #names(db_value_added_matrix)[t] =
-    #names(db_final_demand_matrix)[t] =
-    names(db_int_cons_matrix)[t] =
-    names(db_household_matrix)[t] =
-    names(db_government_matrix)[t] =
-    names(db_exports_matrix)[t] =
-    names(db_imports_matrix)[t] =
-    (1994+t)
+      names(db_outputs_matrix)[t] =
+      names(db_sectors_coef_matrix)[t] =
+      names(db_value_added_matrix)[t] =
+      names(db_int_cons_matrix)[t] =
+      names(db_household_matrix)[t] =
+      names(db_investment_matrix)[t] =
+      names(db_government_matrix)[t] =
+      names(db_exports_matrix)[t] =
+      names(db_imports_matrix)[t] =
+      (1994+t)
     
   }
+  
   
   # Armazenamento das listas dentro da lista de paises. 
   db_sectors[[c]] <- db_sectors_matrix
   db_outputs[[c]] <- db_outputs_matrix
   db_sectors_coef[[c]] <- db_sectors_coef_matrix
-  #db_value_added[[c]] <- db_value_added_matrix
-  #db_final_demand[[c]] <- db_final_demand_matrix
+  db_value_added[[c]] <- db_value_added_matrix
   db_int_cons[[c]] <- db_int_cons_matrix
   db_household[[c]] <- db_household_matrix
+  db_investment[[c]] <- db_investment_matrix
   db_government[[c]] <- db_government_matrix
   db_exports[[c]] <- db_exports_matrix
   db_imports[[c]] <- db_imports_matrix
@@ -179,23 +180,23 @@ for (c in 1:length(countries)){
   
   # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
   names(db_sectors)[c] =
-  names(db_outputs)[c] =
-  names(db_sectors_coef)[c] =
-  #names(db_value_added)[c] =
-  #names(db_final_demand)[c] =
-  names(db_int_cons)[c] =
-  names(db_household)[c] =
-  names(db_government)[c] =
-  names(db_exports)[c] =
-  names(db_imports)[c] =
-  countries[c]
+    names(db_outputs)[c] =
+    names(db_sectors_coef)[c] =
+    names(db_value_added)[c] =
+    names(db_int_cons)[c] =
+    names(db_household)[c] =
+    names(db_investment)[c] =
+    names(db_government)[c] =
+    names(db_exports)[c] =
+    names(db_imports)[c] =
+    countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
-  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_final_demand, database_int_cons, database_household, database_government, database_exports, database_imports,
-                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix,  db_value_added_matrix, db_final_demand_matrix, db_int_cons_matrix, db_household_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)}
+  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_int_cons, database_household, database_investment, database_government, database_exports, database_imports,
+                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix, db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)}
 }
 #end_time <- Sys.time()
-#code_time(start_time, end_time)                                                                                                                    # Cronometro
+#code_time(start_time, end_time)     #Cronometro
 
 
 
@@ -207,10 +208,77 @@ for (c in 1:length(countries)){
 
 
 # --- Evolução - Produto Agrícola, Consumo Intermediário e Componentes da Demanda ---- #
-
-for (t in 1:24){
-  
+start_time = Sys.time()
+for (c in 1:length(countries)){
+  for (i in 1:45){
+    for (t in 1:24){
+      if (t == 1){
+        output = db_outputs[[c]][[t]][1,i]
+        int_cons = db_int_cons[[c]][[t]][1,i]
+        household = db_household[[c]][[t]][1,i]
+        investment = db_investment[[c]][[t]][1,i]
+        government = db_government[[c]][[t]][1,i]
+        exports = db_exports[[c]][[t]][1,i]
+        imports = db_imports[[c]][[t]][1,i]
+        
+      }
+      else{
+        output = rbind(output, db_outputs[[c]][[t]][1,i])
+        int_cons = rbind(int_cons, db_int_cons[[c]][[t]][1,i])
+        household = rbind(household, db_household[[c]][[t]][1,i])
+        investment = rbind(investment, db_investment[[c]][[t]][1,i])
+        government = rbind(government, db_government[[c]][[t]][1,i])
+        exports = rbind(exports, db_exports[[c]][[t]][1,i])
+        imports = rbind(imports, db_imports[[c]][[t]][1,i])
+      }
+    }
+    
+    plot_variables_evolution =
+      ggplot() +
+      
+      geom_line(data = as.data.frame(x = output), mapping = aes(x = 1995:2018, y = output, color = 'Output'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = int_cons), mapping = aes(x = 1995:2018, y = int_cons, color = 'Intermediate Cons.'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = household), mapping = aes(x = 1995:2018, y = household, color = 'Households Cons.'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = investment), mapping = aes(x = 1995:2018, y = investment, color = 'Investments'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = government), mapping = aes(x = 1995:2018, y = government, color = 'Government'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = exports), mapping = aes(x = 1995:2018, y = exports, color = 'Exports'), linetype = 'dashed', linewidth = 0.7) +
+      geom_line(data = as.data.frame(x = imports), mapping = aes(x = 1995:2018, y = imports, color = 'Imports'), linetype = 'dashed', linewidth = 0.7) +
+      theme(title = element_text(family = 'Segoe UI', size = 14),
+            text = element_text(family = 'Segoe UI', face = 'italic', size = 14),                 # Formatacao geral
+            axis.title.y = element_text(size = 12.5 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 12.5, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.x = element_text(angle = 30, margin = margin(t = 12), size = 12.5),         # Textos do eixo x 
+            panel.background = element_rect(fill = '#F2F3F4')
+      ) +
+      scale_color_manual(breaks = c('Output', 'Intermediate Cons.', 'Households Cons.', 'Investments', 'Government', 'Exports', 'Imports'),
+                         values = c('#ff1a1a', '#5900cc', '#73e600', '#e63e00', '#333333', '#0035e6', '#24c8bf'),
+                         labels = c('Output', 'Intermediate Cons.', 'Households Cons.', 'Investments', 'Government', 'Exports', 'Imports'),
+                         name = 'Variables') +
+      scale_x_continuous(breaks = seq(1996, 2018, 2)) +
+      labs(title = 'Evolution - Intermediate and Final Variables', subtitle = paste0('Setor: ', dim_row[i,1]), x = NULL, y = 'US Dolar, Millions')
+    
+    
+    ggsave(filename = paste0('Variables Evolution - Sector ', dim_row[i, 1], '.png'),
+           path = paste0(path, 'MIP_OECD/Plots/Evolucao_Variaveis'),
+           width = 3200,
+           height = 1500,
+           units = 'px'
+    )
+    
+    ggsave(filename = paste0('Variables Evolution - Sector ', dim_row[i, 1], '.png'),
+           path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Evolucao_Variaveis',
+           width = 3200,
+           height = 1500,
+           units = 'px'
+    )
+    
+  }
+  if (c == length(countries)){rm(output, int_cons, household, investment, government, exports, imports)}
 }
+end_time = sys.time()
+code_time(start_time, end_time)
+
+
 
 # --- Eigenvalues --- #
 eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
@@ -258,54 +326,54 @@ for (c in length(countries)){
 # --- PCA Analysis --- #
 for (c in 1:length(countries)){
   for (t in 1:24){
-  pca <- prcomp(x = db_sectors[[c]][[t]])
-  pca_scores <- pca$x
-  pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
-  pca_loadings <- pca$rotation
-
-
-  pca_scores_df <- as.data.frame(pca_scores[c(-1), c(1,2)])
-  pca_variance_explained_df <- as.data.frame(pca_variance_explained)
-  pca_loadings_df <- as.data.frame(pca_loadings)
-  rm(pca_scores, pca_variance_explained, pca_loadings)
-
-  pca_variance_explained_plot <- 
-    ggplot() +
-    geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
-    labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
-  
-  ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Variânca Explicada'),
-         filename = paste0('Variancia_Explicada_PCA_', countries[c], '_', 1994+t,'.png'),
-         width = 3000,
-         height = 1300,
-         units = 'px'
-  )
-  
-
-# --- Plots - PCA Analysis --- #
-  # pca_biplot <-
-  #   ggplot() +
-  #   geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
-  #   geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
-  #   #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
-  #   geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
-  #   geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
-  #   scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
-  #   scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
-  # 
-  # ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
-  #        filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
-  #        width = 3000,
-  #        height = 1500,
-  #        units = 'px'
-  # )
-  
-  
-  
-  #Graficos dinamicos
-  #ggplotly(pca_variance_explained_plot)
-  #ggplotly(pca_biplot)
-  #pca_biplot
+    pca <- prcomp(x = db_sectors[[c]][[t]])
+    pca_scores <- pca$x
+    pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+    pca_loadings <- pca$rotation
+    
+    
+    pca_scores_df <- as.data.frame(pca_scores[c(-1), c(1,2)])
+    pca_variance_explained_df <- as.data.frame(pca_variance_explained)
+    pca_loadings_df <- as.data.frame(pca_loadings)
+    rm(pca_scores, pca_variance_explained, pca_loadings)
+    
+    pca_variance_explained_plot <- 
+      ggplot() +
+      geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
+      labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
+    
+    ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Variânca Explicada'),
+           filename = paste0('Variancia_Explicada_PCA_', countries[c], '_', 1994+t,'.png'),
+           width = 3000,
+           height = 1300,
+           units = 'px'
+    )
+    
+    
+    # --- Plots - PCA Analysis --- #
+    # pca_biplot <-
+    #   ggplot() +
+    #   geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
+    #   geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
+    #   #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
+    #   geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
+    #   geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
+    #   scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
+    #   scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
+    # 
+    # ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
+    #        filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
+    #        width = 3000,
+    #        height = 1500,
+    #        units = 'px'
+    # )
+    
+    
+    
+    #Graficos dinamicos
+    #ggplotly(pca_variance_explained_plot)
+    #ggplotly(pca_biplot)
+    #pca_biplot
   }
 }
 
@@ -335,12 +403,12 @@ for (c in length(countries)){
 
 # --- Plots - Coeficientes --- #
 
-  # Em aes o argumento color e empregado de maneira nao usual.
-  # Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
-  # font_import(): importa todas as fontes do sistema
-  # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
-  # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
-  # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+# Em aes o argumento color e empregado de maneira nao usual.
+# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
+# font_import(): importa todas as fontes do sistema
+# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
+# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
+# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
 start_time <- Sys.time()
 for (c in length(countries)){                                                               # c para pais
   for (i in 1:45){                                                                           # i para linha
@@ -348,11 +416,11 @@ for (c in length(countries)){                                                   
       for (t in 1:24){                                                                      # t para o ano
         if (t == 1) {
           w = db_sectors_coef[[c]][[t]][i:i,j:j]                                           # Gerar plot da serie de coeficientes
-          } 
+        } 
         else {
           w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
-          }
         }
+      }
       Plots <- ggplot() + 
         
         # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
@@ -413,42 +481,42 @@ for (c in length(countries)){                                                   
       }
     }
     Plots <- ggplot() + 
-        
-        # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
-        geom_line(data = as.data.frame(x = w),
-                  #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
-                  aes(x = 1995:2018, y = w),
-                  linetype = 'dashed',
-                  size = .75) +
-        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-        scale_color_manual(breaks = NULL,
-                           values = c('#45B39D'),#, '#D35400'),
-                           labels(NULL)) +
-        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-        labs(title = paste0('Output Evolution (', dim_col[j,1], ')'),
-             #subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
-             x = NULL,
-             y = 'Output') +
-        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
-              panel.background = element_rect(fill = '#F2F3F4')
-        )
       
-      ggsave(path = paste0(path, 'MIP-OECD/Plots/Produtos'),                                      # Não esqueça de mudar o path ao salvar
-             filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
+      # Caso deseje plotar para mais de um país, basta copiar o trecho abaixo
+      geom_line(data = as.data.frame(x = w),
+                #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
+                aes(x = 1995:2018, y = w),
+                linetype = 'dashed',
+                size = .75) +
+      geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
+      scale_color_manual(breaks = NULL,
+                         values = c('#45B39D'),#, '#D35400'),
+                         labels(NULL)) +
+      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+      labs(title = paste0('Output Evolution (', dim_col[j,1], ')'),
+           #subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
+           x = NULL,
+           y = 'Output') +
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
+            panel.background = element_rect(fill = '#F2F3F4')
       )
-      
-      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Produtos'),
-             filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
-      )
+    
+    ggsave(path = paste0(path, 'MIP-OECD/Plots/Produtos'),                                      # Não esqueça de mudar o path ao salvar
+           filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
+           width = 3000,
+           height = 1300,
+           units = 'px'
+    )
+    
+    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Produtos'),
+           filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
+           width = 3000,
+           height = 1300,
+           units = 'px'
+    )
   }
 }
 end_time <- Sys.time()
