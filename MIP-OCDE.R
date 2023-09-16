@@ -93,7 +93,7 @@ dim_col <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "c
 # --- Preparacao da Database --- #
 
 # Loop Principal - Filtragem por Pais #
-#start_time <- Sys.time()
+start_time <- Sys.time()
 for (c in 1:length(countries)){
   database <- read_excel(path = paste0(path, 'MIP_OECD/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
   database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
@@ -195,8 +195,8 @@ for (c in 1:length(countries)){
   if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_int_cons, database_household, database_investment, database_government, database_exports, database_imports,
                                  db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix, db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)}
 }
-#end_time <- Sys.time()
-#code_time(start_time, end_time)     #Cronometro
+end_time <- Sys.time()
+code_time(start_time, end_time)     #Cronometro
 
 
 
@@ -275,7 +275,7 @@ for (c in 1:length(countries)){
   }
   if (c == length(countries)){rm(output, int_cons, household, investment, government, exports, imports)}
 }
-end_time = sys.time()
+end_time = Sys.time()
 code_time(start_time, end_time)
 
 
