@@ -192,8 +192,12 @@ for (c in 1:length(countries)){
     countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
-  if (c == length(countries)){rm(database_sectors, database_outputs, database_value_added, database_int_cons, database_household, database_investment, database_government, database_exports, database_imports,
-                                 db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix, db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)}
+  if (c == length(countries)){
+    rm(database,
+        database_sectors, database_outputs, database_value_added, database_int_cons, database_household, database_investment, database_government, database_exports, database_imports,
+        db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix, db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)
+  }
+  
 }
 end_time <- Sys.time()
 code_time(start_time, end_time)     #Cronometro
@@ -207,7 +211,7 @@ code_time(start_time, end_time)     #Cronometro
 # ------------------------------- #
 
 
-# --- Evolução - Produto Agrícola, Consumo Intermediário e Componentes da Demanda ---- #
+# --- Evolucao - Produto Agricola, Consumo Intermediario e Componentes da Demanda ---- #
 start_time = Sys.time()
 for (c in 1:length(countries)){
   for (i in 1:45){
@@ -280,7 +284,21 @@ code_time(start_time, end_time)
 
 
 
-# --- Eigenvalues --- #
+# --- Ranking Setores por Produto --- #
+ranking_matrix = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_row), 1995:2018))
+
+for (c in 1:length(countries)){
+  for (t in 1:24){
+    ranking_output_sectors = 46 - rank(x = t(db_outputs[[c]][[t]]))
+    ranking_matrix[,t] = ranking_output_sectors
+  }
+  
+  if (c == length(countries)){rm(ranking_output_sectors)}
+}
+
+
+
+# --- Autovalores --- #
 eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
 
 # Atencao: na analise realizada caso o autovalor seja um numero complexo a parte imaginaria e descartada
