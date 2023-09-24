@@ -59,6 +59,9 @@ db_sectors =
   db_government =
   db_exports =
   db_imports =
+  db_leontief =
+  backward_linkages = 
+  foward_linkages = 
   vector(mode = 'list', length = length(countries)) 
 
 
@@ -73,6 +76,9 @@ db_sectors_matrix =
   db_government_matrix = 
   db_exports_matrix =
   db_imports_matrix =
+  db_leontief_matrix =
+  backward_linkages_matrix = 
+  foward_linkages_matrix = 
   vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
@@ -87,6 +93,9 @@ dim_col <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "c
 # dim_row <- unique(database[[1]]) 
 # dim_col <- unique(database[[1]])
 
+
+# Matriz Diagonal (I)
+I = diag(x = 1, nrow = 45, ncol = 45)
 
 
 
@@ -149,6 +158,18 @@ for (c in 1:length(countries)){
     }
     
     
+    
+    # Matriz Leontief // (I - A)^(-1)
+    db_leontief_matrix[[t]] = matrix(data = solve(I - db_sectors_coef_matrix[[t]]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))
+    
+    # Indice de Ligacao para Tras
+    backward_linkages_matrix[[t]] = (colSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    
+    # Indice de Ligacao para Frente
+    foward_linkages_matrix[[t]] = (rowSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    
+    
+    
     # Renomeando os elementos da lista temporal. Cada elemento da lista recebera a data referente ao ano da matriz
     names(db_sectors_matrix)[t] =
       names(db_outputs_matrix)[t] =
@@ -160,22 +181,28 @@ for (c in 1:length(countries)){
       names(db_government_matrix)[t] =
       names(db_exports_matrix)[t] =
       names(db_imports_matrix)[t] =
+      names(db_leontief_matrix)[t] = 
+      names(backward_linkages_matrix)[t] =
+      names(foward_linkages_matrix)[t] =
       (1994+t)
     
   }
   
   
   # Armazenamento das listas dentro da lista de paises. 
-  db_sectors[[c]] <- db_sectors_matrix
-  db_outputs[[c]] <- db_outputs_matrix
-  db_sectors_coef[[c]] <- db_sectors_coef_matrix
-  db_value_added[[c]] <- db_value_added_matrix
-  db_int_cons[[c]] <- db_int_cons_matrix
-  db_household[[c]] <- db_household_matrix
-  db_investment[[c]] <- db_investment_matrix
-  db_government[[c]] <- db_government_matrix
-  db_exports[[c]] <- db_exports_matrix
-  db_imports[[c]] <- db_imports_matrix
+  db_sectors[[c]] = db_sectors_matrix
+  db_outputs[[c]] = db_outputs_matrix
+  db_sectors_coef[[c]] = db_sectors_coef_matrix
+  db_value_added[[c]] = db_value_added_matrix
+  db_int_cons[[c]] = db_int_cons_matrix
+  db_household[[c]] = db_household_matrix
+  db_investment[[c]] = db_investment_matrix
+  db_government[[c]] = db_government_matrix
+  db_exports[[c]] = db_exports_matrix
+  db_imports[[c]] = db_imports_matrix
+  db_leontief[[c]] = db_leontief_matrix
+  backward_linkages[[c]] = backward_linkages_matrix
+  foward_linkages[[c]] = foward_linkages_matrix
   
   
   # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
@@ -189,13 +216,24 @@ for (c in 1:length(countries)){
     names(db_government)[c] =
     names(db_exports)[c] =
     names(db_imports)[c] =
+    names(db_leontief)[c] =
+    names(backward_linkages)[c] =
+    names(foward_linkages)[c] =
     countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
   if (c == length(countries)){
     rm(database,
-        database_sectors, database_outputs, database_value_added, database_int_cons, database_household, database_investment, database_government, database_exports, database_imports,
-        db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix, db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix)
+
+       database_sectors, database_outputs, database_value_added, database_int_cons, database_household,
+       database_investment, database_government, database_exports, database_imports,
+       
+       db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix,
+       db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
+       db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix,
+       
+       I
+    )
   }
   
 }
@@ -285,17 +323,43 @@ code_time(start_time, end_time)
 
 
 # --- Ranking Setores por Produto --- #
-ranking_matrix = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_row), 1995:2018))
+
+ranking_matrix_output = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
+ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
+ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 
 for (c in 1:length(countries)){
   for (t in 1:24){
     ranking_output_sectors = 46 - rank(x = t(db_outputs[[c]][[t]]))
-    ranking_matrix[,t] = ranking_output_sectors
+    ranking_backward_linkages = 46 - rank(x = t(backward_linkages[[c]][[t]]))
+    ranking_foward_linkages = 46 - rank(x = t(foward_linkages[[c]][[t]]))
+    
+    ranking_matrix_output[,t] = ranking_output_sectors
+    ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
+    ranking_matrix_backward_linkages[,t] = ranking_foward_linkages
+
   }
   
-  if (c == length(countries)){rm(ranking_output_sectors)}
+  if (c == length(countries)){rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages)}
 }
 
+
+
+
+# --- Indices de Ligacao Puros --- #
+Ajj = matrix(data = db_sectors_coef[[c]][[t]][1,1], nrow = 1, ncol = 1, dimnames = c(dim_row[1,1], dim_col[1,1]))
+Arr = matrix(data = db_sectors_coef[[c]][[t]][-1,-1], nrow = 44, ncol = 44, dimnames = c(dim_row[-1,1], dim_col[-1,1]))
+Arj = matrix(data = db_sectors_coef[[c]][[t]][2:45,1], nrow = 44, ncol = 1, dimnames = c(dim_row[2:45,1], dim_col[1,1]))
+Ajr = matrix(data = db_sectors_coef[[t]][[t]][1,2:45], nrow = 1, ncol = 44, dimnames = c(dim_row[1,1], dim_col[2:45,1]))
+
+delta_j = matrix(data = (1-Ajj)^(-1), nrow = 1, ncol = 1, dimnames = c(dim_row[1,1], dim_col[1,1]))
+delta_r = matrix(data = solve(diag(x = 1, nrow = 44, ncol = 44) - Arr), nrow = 44, ncol = 44, dimnames = c(dim_row[-1,1], dim_col[-1,1]))
+
+Yj = db_outputs[[c]][[t]][,i]
+Yr = db_outputs[[c]][[t]][,-i]
+
+PBL = delta_r %*% Arj %*% delta_j %*% Yj
+PFL = delta_j %*% Ajr %*% delta_r %*% Yr
 
 
 # --- Autovalores --- #
