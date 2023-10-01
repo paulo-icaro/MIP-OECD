@@ -61,7 +61,8 @@ db_sectors =
   db_imports =
   db_leontief =
   backward_linkages = 
-  foward_linkages = 
+  foward_linkages =
+  backward_dispersion =
   vector(mode = 'list', length = length(countries)) 
 
 
@@ -78,7 +79,8 @@ db_sectors_matrix =
   db_imports_matrix =
   db_leontief_matrix =
   backward_linkages_matrix = 
-  foward_linkages_matrix = 
+  foward_linkages_matrix =
+  backward_dispersion_matrix =
   vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
@@ -139,11 +141,11 @@ for (c in 1:length(countries)){
     db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))                       # Outputs
     db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 1 , ncol = 45, dimnames = c('Value Added', dim_col))         # Added Values
     db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45, dimnames = c("Intermediate Consumption", dim_col))   # Intermediate Consumption
-    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_row))                # Households Consumption
-    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 1, ncol = 45, dimnames = c("Investment", dim_row))             # Investment
-    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_row))             # Government
-    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_row))                      # Exports
-    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_row))                      # Imports
+    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_col))                # Households Consumption
+    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 1, ncol = 45, dimnames = c("Investment", dim_col))             # Investment
+    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_col))             # Government
+    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_col))                      # Exports
+    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_col))                      # Imports
     
     
     # Loop para calcular e armazenar os coeficientes
@@ -164,9 +166,46 @@ for (c in 1:length(countries)){
     
     # Indice de Ligacao para Tras
     backward_linkages_matrix[[t]] = (colSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    backward_linkages_matrix[[t]] = matrix(data = as.matrix(backward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Backward_Linkage', t(dim_col)))
     
     # Indice de Ligacao para Frente
     foward_linkages_matrix[[t]] = (rowSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    foward_linkages_matrix[[t]] = matrix(data = as.matrix(foward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Foward_Linkage', t(dim_col)))
+    
+    
+    # Indice de Dispersao para Tras
+    for (j in 1:45){
+      inner_piece_bd = 0
+      for (i in 1:45){
+        inner_piece_bd = inner_piece_bd + (db_leontief_matrix[[t]][i,j] - sum(x = db_leontief_matrix[[t]][,j])/45)^2
+      }
+      
+      if (j == 1){
+        backward_dispersion_matrix[[t]] = (inner_piece_bd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][,j])/45)
+      }
+      
+      else{
+        backward_dispersion_matrix[[t]] = cbind( backward_dispersion_matrix[[t]], (inner_piece_bd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][,j])/45) )
+        if (j == 45){colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)}
+      }
+    }
+    
+    # Indice de Dispersao para Frente
+    for (i in 1:45){
+      inner_piece_fd = 0
+      for (j in 1:45){
+        inner_piece_fd = inner_piece_fd + (db_leontief_matrix[[t]][i,j] - sum(x = db_leontief_matrix[[t]][i,])/45)^2
+      }
+      
+      if (i == 1){
+        backward_dispersion_matrix[[t]] = (inner_piece_fd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][i,])/45)
+      }
+      
+      else{
+        backward_dispersion_matrix[[t]] = cbind( backward_dispersion_matrix[[t]], (inner_piece_fd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][i,])/45) )
+        if (i == 45){colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)}
+      }
+    }
     
     
     
@@ -184,6 +223,7 @@ for (c in 1:length(countries)){
       names(db_leontief_matrix)[t] = 
       names(backward_linkages_matrix)[t] =
       names(foward_linkages_matrix)[t] =
+      names(backward_dispersion_matrix)[t] =
       (1994+t)
     
   }
@@ -203,6 +243,7 @@ for (c in 1:length(countries)){
   db_leontief[[c]] = db_leontief_matrix
   backward_linkages[[c]] = backward_linkages_matrix
   foward_linkages[[c]] = foward_linkages_matrix
+  backward_dispersion[[c]] = backward_dispersion_matrix
   
   
   # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
@@ -219,12 +260,13 @@ for (c in 1:length(countries)){
     names(db_leontief)[c] =
     names(backward_linkages)[c] =
     names(foward_linkages)[c] =
+    names(backward_dispersion)[c] =
     countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
   if (c == length(countries)){
     rm(database,
-
+       
        database_sectors, database_outputs, database_value_added, database_int_cons, database_household,
        database_investment, database_government, database_exports, database_imports,
        
@@ -323,21 +365,20 @@ code_time(start_time, end_time)
 
 
 # --- Ranking Setores por Produto --- #
-
 ranking_matrix_output = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 
 for (c in 1:length(countries)){
   for (t in 1:24){
-    ranking_output_sectors = 46 - rank(x = t(db_outputs[[c]][[t]]))
-    ranking_backward_linkages = 46 - rank(x = t(backward_linkages[[c]][[t]]))
-    ranking_foward_linkages = 46 - rank(x = t(foward_linkages[[c]][[t]]))
+    ranking_output_sectors = 46 - rank(x = (db_outputs[[c]][[t]]))
+    ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])
+    ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
-    ranking_matrix_backward_linkages[,t] = ranking_foward_linkages
-
+    ranking_matrix_foward_linkages[,t] = ranking_foward_linkages
+    
   }
   
   if (c == length(countries)){rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages)}
@@ -362,124 +403,7 @@ PBL = delta_r %*% Arj %*% delta_j %*% Yj
 PFL = delta_j %*% Ajr %*% delta_r %*% Yr
 
 
-# --- Autovalores --- #
-eigenvalues <- vector(mode = 'list', length = length(countries))                                                                                    # Lista para armazenar os autovalores ao longo dos anos para cada pais
 
-# Atencao: na analise realizada caso o autovalor seja um numero complexo a parte imaginaria e descartada
-for (c in length(countries)){
-  for (t in 1:24){
-    if (t == 1){
-      eigenvalues[[c]] <- Re(eigen(db_sectors_coef[[c]][[t]])$values)
-    }
-    
-    else{
-      eigenvalues[[c]] <- cbind(eigenvalues[[c]], Re(eigen(db_sectors_coef[[c]][[t]])$values))
-      if(t == 24){colnames(eigenvalues[[c]]) <- (1994 + 1:24)}
-    }
-  }
-  names(eigenvalues)[c] <- countries[c]
-}
-
-# --- Plots - Eigenvalues --- #
-# for (c in length(countries)){
-#   for (i in 1:45){
-#     w = matrix(data = eigenvalues[[c]][i,], nrow = 24, ncol = 1)
-#     Plots <- ggplot() +
-#       geom_line(data = as.data.frame(x = w), aes(x = 1995:2018, y = w, color = 'Brazil'), linetype = 'dashed', linewidth = .75) +
-#       geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-#       scale_color_manual(breaks = c('Brazil'), values = c('#45B39D'), labels(NULL)) +
-#       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-#       labs(title = paste0('Time Evolution: Eigenvalue #', i), x = NULL, y = 'Parameter') +
-#       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),           # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-#             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-#             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-#             axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
-#             panel.background = element_rect(fill = '#F2F3F4')
-#       )
-#     
-#     ggsave(path = paste0(path, 'MIP-OECD/Plots/Autovalores'), filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
-#     ggsave(path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Autovalores', filename = paste0('Eigenvalue #', i, '.png'), width = 3000, height = 1300, units = 'px')
-#     
-#   }
-# }
-
-
-
-# --- PCA Analysis --- #
-for (c in 1:length(countries)){
-  for (t in 1:24){
-    pca <- prcomp(x = db_sectors[[c]][[t]])
-    pca_scores <- pca$x
-    pca_variance_explained <- (pca$sdev^2) / sum(pca$sdev^2)
-    pca_loadings <- pca$rotation
-    
-    
-    pca_scores_df <- as.data.frame(pca_scores[c(-1), c(1,2)])
-    pca_variance_explained_df <- as.data.frame(pca_variance_explained)
-    pca_loadings_df <- as.data.frame(pca_loadings)
-    rm(pca_scores, pca_variance_explained, pca_loadings)
-    
-    pca_variance_explained_plot <- 
-      ggplot() +
-      geom_col(data = pca_variance_explained_df, aes(y = pca_variance_explained*100 , x = 1:45)) + 
-      labs(title = 'Explained variance by each PC', x = 'Principal Component', y = '%')
-    
-    ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Variânca Explicada'),
-           filename = paste0('Variancia_Explicada_PCA_', countries[c], '_', 1994+t,'.png'),
-           width = 3000,
-           height = 1300,
-           units = 'px'
-    )
-    
-    
-    # --- Plots - PCA Analysis --- #
-    # pca_biplot <-
-    #   ggplot() +
-    #   geom_point(data = pca_scores_df, aes(x = PC1, y = PC2), colour = '#002BFF') +
-    #   geom_segment(data = pca_loadings_df*10000, aes(x = 0, y = 0, xend = PC1, yend = PC2), colour = '#000000') +
-    #   #geom_label_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), box.padding = 0.35, point.padding = 0.75, segment.color = 'grey50') +
-    #   geom_text_repel(aes(label = rownames(pca_scores_df), x = pca_scores_df$PC1, y = pca_scores_df$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#002BFF') +                                                 # Use este comando para caso deseje usar o ggplotly        
-    #   geom_text_repel(aes(label = rownames(pca_loadings_df), x = (pca_loadings_df*10000)$PC1, y = (pca_loadings_df*10000)$PC2), nudge_x = 0.6, nudge_y = 0.6, colour = '#000000') +                           # Use este comando para caso deseje usar o ggplotly        
-    #   scale_y_continuous(name = 'Scores (PC2)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC2)')) + 
-    #   scale_x_continuous(name = 'Scores (PC1)', sec.axis = sec_axis(trans = ~.*(0.0001), name = 'Loadings (PC1)'))
-    # 
-    # ggsave(path = paste0(path, 'MIP-OECD/Plots/Componentes Principais/Biplot'),
-    #        filename = paste0('Biplot_PCA_Zoomed_', countries[c], '_', 1994+t,'.png'),
-    #        width = 3000,
-    #        height = 1500,
-    #        units = 'px'
-    # )
-    
-    
-    
-    #Graficos dinamicos
-    #ggplotly(pca_variance_explained_plot)
-    #ggplotly(pca_biplot)
-    #pca_biplot
-  }
-}
-
-
-# Gráfico de correlação entre as variáveis originais e os componentes principais
-correlation <- cor(db_sectors[[1]][[1]], pca_scores)
-plot(correlation, xlab = "Variáveis Originais", ylab = "Componentes Principais", main = "Análise de Componentes Principais - Correlação")
-
-
-
-# --- Percentage Changes --- #      
-# Obs: ja foi incluido o salvamento dos dados analisados.
-#wb_perc_change  = createWorkbook(creator = 'pi')
-for (c in length(countries)){
-  for (i in 2:48600){
-    if(i%%24 != 1){
-      database[[c]]$perc_change[i] <- (database[[c]]$ObsValue[i]/database[[c]]$ObsValue[i-1])-1
-    }
-    else {database[[c]]$perc_change[i] = NA}
-  }
-  #addWorksheet(wb = wb_perc_change, sheetName = paises[p])
-  #writeData(wb = wb_perc_change, sheet = paises[p], x = database[[p]])
-}
-#saveWorkbook(wb = wb_perc_change, file = paste0(path, 'Variacoes_Percentuais.xlsx'), overwrite = TRUE)
 
 
 
@@ -613,39 +537,35 @@ code_time(start_time, end_time)
 # --------------- #
 
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors', 'mip_outputs', 'mip_coef', 'mip_eigenvalues')#, 'mip_value_addeds', 'mip_final_demand')
-db <- list(db_sectors, db_outputs, db_sectors_coef, eigenvalues)#, db_value_added, db_final_demand)
+alias <- c('mip_sectors',
+           'mip_outputs',
+           'mip_coef',
+           #'mip_added_value',
+           'mip_leontief',
+           'mip_backward_linkages',
+           'mip_foward_linkages'
+           )
+
+db <- list(db_sectors,
+           db_outputs,
+           db_sectors_coef,
+           #db_added_value,
+           db_leontief,
+           backward_linkages,
+           foward_linkages
+           )
+
 names(db) <- alias
 
 for (c in countries){
   for (i in 1:length(alias)){
     wb <- createWorkbook(creator = 'pi')
     
-    if (i != 4){
-      for (t in 1:24){
-        addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
-        writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
-      }
+    for (t in 1:24){
+      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
+      writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
     }
     
-    if (i == 4){
-      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_1995_2018'))
-      writeData(wb = wb, sheet = paste0(alias[i], '_1995_2018'), x = db[[i]][[c]], rowNames = TRUE)
-    }
-    
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', alias[i], '.xlsx'), overwrite = TRUE)
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/', alias[i], '.xlsx'), overwrite = TRUE)
   }
 }
-
-
-# --- Extracao das dimencoes (Linhas-Colunas) das matrizes --- #
-#col_items <- unique(database[[1]][c(1)])
-#row_items <- unique(database[[1]][c(5)])
-
-# Workbook
-#wb <- createWorkbook(creator = 'pi')
-#addWorksheet(wb = wb, sheetName = 'coluna')
-#addWorksheet(wb = wb, sheetName = 'linha')
-#writeData(wb = wb, sheet = 'coluna' , x = unique(database[[1]][c(1)]))
-#writeData(wb = wb, sheet = 'linha' , x = unique(database[[1]][c(5)]))
-#saveWorkbook(wb = wb, file = paste0(path, '/Dimens?es.xlsx'), overwrite = TRUE)
