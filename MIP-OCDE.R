@@ -11,6 +11,7 @@
 # Link para as matrizes no site da OCDE: https://stats.oecd.org/
 # Link como commitar alteracoes direto no R: https://r-bio.github.io/intro-git-rstudio/
 # Para multiplos comentarios: ctrl + shift + c
+# Blog bastante interesssante: https://viniciusavale.com/NEDUR/IP-R.html#7_%C3%ADndices_de_liga%C3%A7%C3%A3o
 
 # Obs:
 # Aparentemente, diferente de outras bases, nao da para visualizar essa no navegador devido ao limite
@@ -63,6 +64,7 @@ db_sectors =
   backward_linkages = 
   foward_linkages =
   backward_dispersion =
+  foward_dispersion =
   vector(mode = 'list', length = length(countries)) 
 
 
@@ -81,6 +83,7 @@ db_sectors_matrix =
   backward_linkages_matrix = 
   foward_linkages_matrix =
   backward_dispersion_matrix =
+  foward_dispersion_matrix =
   vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
@@ -149,13 +152,13 @@ for (c in 1:length(countries)){
     
     
     # Loop para calcular e armazenar os coeficientes
-    for (i in 1:45){
-      if (i == 1){
-        db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]
+    for (j in 1:45){
+      if (j == 1){
+        db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][1:45,j]/db_outputs_matrix[[t]][,j]
       }
       else{
-        db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][1:45,i]/db_outputs_matrix[[t]][,i]))
-        if (i == 45){colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)}
+        db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][1:45,j]/db_outputs_matrix[[t]][,j]))
+        if (j == 45){colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)}
       }
     }
     
@@ -165,49 +168,37 @@ for (c in 1:length(countries)){
     db_leontief_matrix[[t]] = matrix(data = solve(I - db_sectors_coef_matrix[[t]]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))
     
     # Indice de Ligacao para Tras
-    backward_linkages_matrix[[t]] = (colSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    backward_linkages_matrix[[t]] = colMeans(x = db_leontief_matrix[[t]]) / mean(x = db_leontief_matrix[[t]])
     backward_linkages_matrix[[t]] = matrix(data = as.matrix(backward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Backward_Linkage', t(dim_col)))
     
     # Indice de Ligacao para Frente
-    foward_linkages_matrix[[t]] = (rowSums(x = db_leontief_matrix[[t]])/45) / mean(x = db_leontief_matrix[[t]])
+    foward_linkages_matrix[[t]] = rowMeans(x = db_leontief_matrix[[t]]) / mean(x = db_leontief_matrix[[t]])
     foward_linkages_matrix[[t]] = matrix(data = as.matrix(foward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Foward_Linkage', t(dim_col)))
     
     
-    # Indice de Dispersao para Tras
-    for (j in 1:45){
-      inner_piece_bd = 0
-      for (i in 1:45){
-        inner_piece_bd = inner_piece_bd + (db_leontief_matrix[[t]][i,j] - sum(x = db_leontief_matrix[[t]][,j])/45)^2
-      }
+    # Indices de Dispersao
+    for (w in 1:45){
+      inner_piece_bd = sum((db_leontief_matrix[[t]][,w] - mean(x = db_leontief_matrix[[t]][,w]))^2)
+      inner_piece_fd = sum((db_leontief_matrix[[t]][w,] - mean(x = db_leontief_matrix[[t]][w,]))^2)
       
-      if (j == 1){
-        backward_dispersion_matrix[[t]] = (inner_piece_bd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][,j])/45)
-      }
-      
-      else{
-        backward_dispersion_matrix[[t]] = cbind( backward_dispersion_matrix[[t]], (inner_piece_bd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][,j])/45) )
-        if (j == 45){colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)}
-      }
-    }
-    
-    # Indice de Dispersao para Frente
-    for (i in 1:45){
-      inner_piece_fd = 0
-      for (j in 1:45){
-        inner_piece_fd = inner_piece_fd + (db_leontief_matrix[[t]][i,j] - sum(x = db_leontief_matrix[[t]][i,])/45)^2
-      }
-      
-      if (i == 1){
-        backward_dispersion_matrix[[t]] = (inner_piece_fd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][i,])/45)
+      if (w == 1){
+        backward_dispersion_matrix[[t]] = (inner_piece_bd/44)^(.5) / mean(x = db_leontief_matrix[[t]][,w])
+        foward_dispersion_matrix[[t]] = (inner_piece_fd/44)^(.5) / mean(x = db_leontief_matrix[[t]][w,])
       }
       
       else{
-        backward_dispersion_matrix[[t]] = cbind( backward_dispersion_matrix[[t]], (inner_piece_fd/44)^(1/2) / (sum(x = db_leontief_matrix[[t]][i,])/45) )
-        if (i == 45){colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)}
+        backward_dispersion_matrix[[t]] = cbind(backward_dispersion_matrix[[t]], (inner_piece_bd/44)^(.5) / mean(x = db_leontief_matrix[[t]][,w]))
+        foward_dispersion_matrix[[t]] = cbind(foward_dispersion_matrix[[t]], (inner_piece_fd/44)^(.5) / mean(x = db_leontief_matrix[[t]][w,]))
+        
+        if (w == 45){
+            colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)
+            colnames(foward_dispersion_matrix[[t]]) <- t(dim_col)
+        }
+        
       }
     }
     
-    
+
     
     # Renomeando os elementos da lista temporal. Cada elemento da lista recebera a data referente ao ano da matriz
     names(db_sectors_matrix)[t] =
@@ -224,6 +215,7 @@ for (c in 1:length(countries)){
       names(backward_linkages_matrix)[t] =
       names(foward_linkages_matrix)[t] =
       names(backward_dispersion_matrix)[t] =
+      names(foward_dispersion_matrix)[t] =
       (1994+t)
     
   }
@@ -244,6 +236,7 @@ for (c in 1:length(countries)){
   backward_linkages[[c]] = backward_linkages_matrix
   foward_linkages[[c]] = foward_linkages_matrix
   backward_dispersion[[c]] = backward_dispersion_matrix
+  foward_dispersion[[c]] = foward_dispersion_matrix
   
   
   # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
@@ -261,6 +254,7 @@ for (c in 1:length(countries)){
     names(backward_linkages)[c] =
     names(foward_linkages)[c] =
     names(backward_dispersion)[c] =
+    names(foward_dispersion)[c] =
     countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
@@ -272,7 +266,7 @@ for (c in 1:length(countries)){
        
        db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix,
        db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
-       db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix,
+       db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix, backward_dispersion_matrix, foward_dispersion_matrix,
        
        I
     )
@@ -292,7 +286,7 @@ code_time(start_time, end_time)     #Cronometro
 
 
 # --- Evolucao - Produto Agricola, Consumo Intermediario e Componentes da Demanda ---- #
-start_time = Sys.time()
+#start_time = Sys.time()
 for (c in 1:length(countries)){
   for (i in 1:45){
     for (t in 1:24){
@@ -359,8 +353,8 @@ for (c in 1:length(countries)){
   }
   if (c == length(countries)){rm(output, int_cons, household, investment, government, exports, imports)}
 }
-end_time = Sys.time()
-code_time(start_time, end_time)
+#end_time = Sys.time()
+#code_time(start_time, end_time)
 
 
 
@@ -368,22 +362,27 @@ code_time(start_time, end_time)
 ranking_matrix_output = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
+ranking_matrix_backward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
+ranking_matrix_foward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 
 for (c in 1:length(countries)){
   for (t in 1:24){
     ranking_output_sectors = 46 - rank(x = (db_outputs[[c]][[t]]))
     ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])
     ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])
+    ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])
+    ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
     ranking_matrix_foward_linkages[,t] = ranking_foward_linkages
+    ranking_matrix_backward_dispersion[,t] = ranking_backward_dispersion
+    ranking_matrix_foward_dispersion[,t] = ranking_foward_dispersion
     
   }
   
-  if (c == length(countries)){rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages)}
+  if (c == length(countries)){rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages, ranking_backward_dispersion, ranking_foward_dispersion)}
 }
-
 
 
 
