@@ -108,12 +108,14 @@ I = diag(x = 1, nrow = 45, ncol = 45)
 
 # Loop Principal - Filtragem por Pais #
 start_time <- Sys.time()
-for (c in 1:length(countries)){
+for (c in length(countries)){
   database <- read_excel(path = paste0(path, 'MIP_OECD/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
   database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
   # Loop Secundario - Filtragem por Ano #
   for (t in 1:24){
+    
+    # Separamento das bases
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
     database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))            # Database Added Value
@@ -123,42 +125,28 @@ for (c in 1:length(countries)){
     database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Government
     database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Exports
     database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Imports
-    
-    
-    # Tratando possiveis valores nulos
-    # for (k in 1:2025){
-    #   if (database_sectors[3][k,1] == 0){ 
-    #     database_sectors[3][k,1] <-  1/(10^10)
-    #   }
-    # }
-    # 
-    # for (k in 1:45){
-    #   if (database_outputs[3][k,1] == 0){ 
-    #     database_outputs[3][k,1] <-  1/(10^10)
-    #   }
-    # }
-    
+
     
     # Armazenamento das matrizes de dados temporais filtrados em listas
-    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))                       # Sectors
-    db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 1, ncol = 45, dimnames = c("Output", dim_col))                       # Outputs
-    db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 1 , ncol = 45, dimnames = c('Value Added', dim_col))         # Added Values
-    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 1, ncol = 45, dimnames = c("Intermediate Consumption", dim_col))   # Intermediate Consumption
-    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 1, ncol = 45, dimnames = c("Household", dim_col))                # Households Consumption
-    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 1, ncol = 45, dimnames = c("Investment", dim_col))             # Investment
-    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 1, ncol = 45, dimnames = c("Government", dim_col))             # Government
-    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 1, ncol = 45, dimnames = c("Exports", dim_col))                      # Exports
-    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 1, ncol = 45, dimnames = c("Imports", dim_col))                      # Imports
+    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))                       # Matrix Sectors
+    db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Output"))                       # Matrix Outputs
+    db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 45 , ncol = 1, dimnames = c(dim_col, 'Value Added'))         # Matrix Added Values
+    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Intermediate Consumption"))   # Matrix Intermediate Consumption
+    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Household"))                # Matrix Households Consumption
+    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Investment"))             # Matrix Investment
+    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Government"))             # Matrix Government
+    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Exports"))                      # Matrix Exports
+    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col, "Imports"))                      # Matrix Imports
     
     
     # Loop para calcular e armazenar os coeficientes
-    for (j in 1:45){
-      if (j == 1){
-        db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][1:45,j]/db_outputs_matrix[[t]][,j]
+    for (w in 1:45){
+      if (w == 1){
+        db_sectors_coef_matrix[[t]] <- db_sectors_matrix[[t]][,w]/db_outputs_matrix[[t]][w,]
       }
       else{
-        db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][1:45,j]/db_outputs_matrix[[t]][,j]))
-        if (j == 45){colnames(db_sectors_coef_matrix[[t]]) <- t(dim_col)}
+        db_sectors_coef_matrix[[t]] <- cbind(db_sectors_coef_matrix[[t]], (db_sectors_matrix[[t]][,w]/db_outputs_matrix[[t]][w,]))
+        if (w == 45){matrix(data = db_sectors_coef_matrix[[t]], nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))}
       }
     }
     
@@ -169,12 +157,11 @@ for (c in 1:length(countries)){
     
     # Indice de Ligacao para Tras
     backward_linkages_matrix[[t]] = colMeans(x = db_leontief_matrix[[t]]) / mean(x = db_leontief_matrix[[t]])
-    backward_linkages_matrix[[t]] = matrix(data = as.matrix(backward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Backward_Linkage', t(dim_col)))
+    backward_linkages_matrix[[t]] = matrix(data = as.matrix(backward_linkages_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Backward_Linkage'))
     
     # Indice de Ligacao para Frente
     foward_linkages_matrix[[t]] = rowMeans(x = db_leontief_matrix[[t]]) / mean(x = db_leontief_matrix[[t]])
-    foward_linkages_matrix[[t]] = matrix(data = as.matrix(foward_linkages_matrix[[t]]), nrow = 1, ncol = 45, dimnames = list('Foward_Linkage', t(dim_col)))
-    
+    foward_linkages_matrix[[t]] = matrix(data = as.matrix(foward_linkages_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Foward_Linkage'))
     
     # Indices de Dispersao
     for (w in 1:45){
@@ -191,11 +178,11 @@ for (c in 1:length(countries)){
         foward_dispersion_matrix[[t]] = cbind(foward_dispersion_matrix[[t]], (inner_piece_fd/44)^(.5) / mean(x = db_leontief_matrix[[t]][w,]))
         
         if (w == 45){
-            colnames(backward_dispersion_matrix[[t]]) <- t(dim_col)
-            colnames(foward_dispersion_matrix[[t]]) <- t(dim_col)
+            backward_dispersion_matrix[[t]] = matrix(data = as.matrix(backward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Backward_Linkage'))
+            foward_dispersion_matrix[[t]] = matrix(data = as.matrix(foward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Foward_Linkage'))
         }
-        
       }
+      
     }
     
 
@@ -358,7 +345,7 @@ for (c in 1:length(countries)){
 
 
 
-# --- Ranking Setores por Produto --- #
+# --- Ranking Setores --- #
 ranking_matrix_output = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
@@ -367,11 +354,11 @@ ranking_matrix_foward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimna
 
 for (c in 1:length(countries)){
   for (t in 1:24){
-    ranking_output_sectors = 46 - rank(x = (db_outputs[[c]][[t]]))
-    ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])
-    ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])
-    ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])
-    ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])
+    ranking_output_sectors = 46 - rank(x = (db_outputs[[c]][[t]]))                                # Ranking por Produto
+    ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])                        # Ranking Indice de Ligacao para Tras
+    ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])                            # Ranking Indice de Ligacao para Frente
+    ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])                         # Ranking Indice de Dispersao para Tras
+    ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])                             # Ranking Indice de Dispersao para Frente
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
@@ -531,6 +518,22 @@ code_time(start_time, end_time)
 
 
 
+# --- Plots - Backward and Foward Linkages --- #
+start_time <- Sys.time() 
+for(c in length(countries)){
+  for(t in 1:24){
+    linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
+    Plots = ggplot() +
+      geom_point(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2]))
+      
+  }
+}
+
+
+
+
+
+
 # --------------- #
 # --- Savings --- #
 # --------------- #
@@ -542,7 +545,9 @@ alias <- c('mip_sectors',
            #'mip_added_value',
            'mip_leontief',
            'mip_backward_linkages',
-           'mip_foward_linkages'
+           'mip_foward_linkages',
+           'mip_backward_dispersion',
+           'mip_foward_dispersion'
            )
 
 db <- list(db_sectors,
@@ -551,7 +556,9 @@ db <- list(db_sectors,
            #db_added_value,
            db_leontief,
            backward_linkages,
-           foward_linkages
+           foward_linkages,
+           backward_dispersion,
+           foward_dispersion
            )
 
 names(db) <- alias
