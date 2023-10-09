@@ -437,15 +437,8 @@ for (c in length(countries)){                                                   
               panel.background = element_rect(fill = '#F2F3F4')
         )
       
-      ggsave(path = paste0(path, 'MIP-OECD/Plots/Coeficientes'),
-             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
-      )
-      
       ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Coeficientes'),
-             filename = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1], '.png'),
+             filename = paste0('Setor ', dim_row[i,1], ' para ', dim_col[j,1], '.png'),
              width = 3000,
              height = 1300,
              units = 'px'
@@ -485,7 +478,7 @@ for (c in length(countries)){                                                   
                          values = c('#45B39D'),#, '#D35400'),
                          labels(NULL)) +
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('Output Evolution (', dim_col[j,1], ')'),
+      labs(title = paste0('Evolução do Produto (', dim_col[j,1], ')'),
            #subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
            x = NULL,
            y = 'Output') +
@@ -496,15 +489,8 @@ for (c in length(countries)){                                                   
             panel.background = element_rect(fill = '#F2F3F4')
       )
     
-    ggsave(path = paste0(path, 'MIP-OECD/Plots/Produtos'),                                      # Não esqueça de mudar o path ao salvar
-           filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
-           width = 3000,
-           height = 1300,
-           units = 'px'
-    )
-    
     ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Produtos'),
-           filename = paste0('Output Evolution (', dim_col[j,1], ')', '.png'),
+           filename = paste0('Evolucao_Produto_', dim_col[j,1], '.png'),
            width = 3000,
            height = 1300,
            units = 'px'
@@ -519,16 +505,74 @@ code_time(start_time, end_time)
 
 
 # --- Plots - Backward and Foward Linkages --- #
+# https://www.statology.org/geom_vline-label/
 start_time <- Sys.time() 
 for(c in length(countries)){
-  for(t in 1:24){
+  for(t in 1:2){
     linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
-    Plots = ggplot() +
-      geom_point(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2]))
-      
+    
+    Plots = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
+      geom_point() + 
+      geom_hline(yintercept = 1) + 
+      geom_vline(xintercept = 1) +
+      annotate(geom = 'text', label = 'Indice de Ligação para Trás = 1', x = max(linkages[,1])+0.05, y = 1.05) +
+      annotate(geom = 'text', label = 'Indice de Ligação para Frente = 1', y = max(linkages[,2])+0.05, x = 1.05, angle = 90) +
+      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+      labs(title = paste0('Índices de Ligação (', 1994+t, ')'), 
+           x = 'Índice de Ligação para Trás',
+           y = 'Índice de Ligação para Frente') + 
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+            panel.background = element_rect(fill = '#F2F3F4'))
+    
+    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
+           filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
+           width = 4500,
+           height = 2500,
+           units = 'px'
+    )
   }
 }
+end_time <- Sys.time()
+code_time(start_time, end_time)
 
+
+
+
+
+# --- Plots - Backward and Foward Dispersion --- #
+start_time <- Sys.time() 
+for(c in length(countries)){
+  for(t in 1:2){
+    linkages = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
+    
+    
+    Plots = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
+      geom_point() + 
+      geom_hline(yintercept = 1) +
+      geom_vline(xintercept = 1) +
+      annotate(geom = 'text', label = 'Indice de Dispersao para Trás = 1', x = mean(linkages[,1]), y = 1.05) +
+      annotate(geom = 'text', label = 'Indice de Dispersao para Frente = 1', y = mean(linkages[,2]), x = 1.05, angle = 90) +
+      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+      labs(title = paste0('Índices de Dispersão (', 1994+t, ')'), 
+           x = 'Índice de Dispersão para Trás',
+           y = 'Índice de Dispersão para Frente') + 
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+            panel.background = element_rect(fill = '#F2F3F4'))
+    
+    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
+           filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
+           width = 4500,
+           height = 2500,
+           units = 'px'
+    )
+  }
+}
+end_time <- Sys.time()
+code_time(start_time, end_time)
 
 
 
