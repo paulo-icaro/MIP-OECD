@@ -28,6 +28,7 @@ library(tidyverse)
 library(extrafont) 
 library(ggrepel)
 library(plotly)
+library(geomtextpath)
 
 
 # --- Paths --- #
@@ -368,8 +369,20 @@ for (c in 1:length(countries)){
     
   }
   
-  if (c == length(countries)){rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages, ranking_backward_dispersion, ranking_foward_dispersion)}
+  if (c == length(countries)){
+    ranking_list = list(ranking_matrix_output, ranking_matrix_backward_linkages, ranking_matrix_foward_linkages, ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion)
+    rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages, ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_output, ranking_matrix_backward_linkages, ranking_matrix_foward_linkages, ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion)
+  }
 }
+
+
+wb = createWorkbook(creator = 'pi')
+ranking_alias = c('Ranking_Outputs', 'Ranking_Backward_Linkages', 'Ranking_Foward_Linkages', 'Ranking_Backward_Dispersion', 'Ranking_Foward_Dispersion')
+for (x in 1:length(ranking_list)){
+  addWorksheet(wb = wb, sheetName = ranking_alias[x])
+  writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
+}
+saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/mip_rankings.xlsx'), overwrite = TRUE)
 
 
 
@@ -504,19 +517,17 @@ code_time(start_time, end_time)
 
 
 
-# --- Plots - Backward and Foward Linkages --- #
+# --- Plots - Backward and Foward Linkages and Dispersion --- #
 # https://www.statology.org/geom_vline-label/
 start_time <- Sys.time() 
 for(c in length(countries)){
-  for(t in 1:2){
-    linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
+  for(t in 1:24){
     
-    Plots = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
+    linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
+    Plots_Linkages = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
       geom_point() + 
-      geom_hline(yintercept = 1) + 
-      geom_vline(xintercept = 1) +
-      annotate(geom = 'text', label = 'Indice de Ligação para Trás = 1', x = max(linkages[,1])+0.05, y = 1.05) +
-      annotate(geom = 'text', label = 'Indice de Ligação para Frente = 1', y = max(linkages[,2])+0.05, x = 1.05, angle = 90) +
+      geom_texthline(yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
+      geom_textvline(xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
       geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
       labs(title = paste0('Índices de Ligação (', 1994+t, ')'), 
            x = 'Índice de Ligação para Trás',
@@ -524,14 +535,44 @@ for(c in length(countries)){
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            panel.background = element_rect(fill = '#F2F3F4'))
+            panel.background = element_rect(fill = '#F2F3F4')) +
+      scale_x_continuous(breaks = seq(floor(min(linkages[,1])), ceiling(max(linkages[,1])), 0.1)) + 
+      scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
     
-    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
-           filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
+    ggsave(plot = Plots_Linkages,
+            path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
+            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
+            width = 4500,
+            height = 2500,
+            units = 'px'
+    )
+    
+    
+    
+    dispersion = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
+    Plots_Dispersion = ggplot(data = as.data.frame(x = dispersion), aes(x = dispersion[,1], y = dispersion[,2], label = rownames(dispersion))) +
+      geom_point() + 
+      geom_texthline(yintercept = 1, label = 'Indice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
+      geom_textvline(xintercept = 1, label = 'Indice de Dispersão para Frente = 1', hjust = 0.98, vjust = -0.15) +
+      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+      labs(title = paste0('Índices de Dispersão (', 1994+t, ')'), 
+           x = 'Índice de Dispersão para Trás',
+           y = 'Índice de Dispersão para Frente') + 
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+            panel.background = element_rect(fill = '#F2F3F4')) +
+      scale_x_continuous(breaks = seq(floor(min(dispersion[,1])), ceiling(max(dispersion[,1])), 0.5)) + 
+      scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
+    
+    ggsave(plot = Plots_Dispersion,
+           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
+           filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
            width = 4500,
            height = 2500,
            units = 'px'
     )
+    
   }
 }
 end_time <- Sys.time()
@@ -542,37 +583,7 @@ code_time(start_time, end_time)
 
 
 # --- Plots - Backward and Foward Dispersion --- #
-start_time <- Sys.time() 
-for(c in length(countries)){
-  for(t in 1:2){
-    linkages = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
-    
-    
-    Plots = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
-      geom_point() + 
-      geom_hline(yintercept = 1) +
-      geom_vline(xintercept = 1) +
-      annotate(geom = 'text', label = 'Indice de Dispersao para Trás = 1', x = mean(linkages[,1]), y = 1.05) +
-      annotate(geom = 'text', label = 'Indice de Dispersao para Frente = 1', y = mean(linkages[,2]), x = 1.05, angle = 90) +
-      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-      labs(title = paste0('Índices de Dispersão (', 1994+t, ')'), 
-           x = 'Índice de Dispersão para Trás',
-           y = 'Índice de Dispersão para Frente') + 
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            panel.background = element_rect(fill = '#F2F3F4'))
-    
-    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
-           filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
-           width = 4500,
-           height = 2500,
-           units = 'px'
-    )
-  }
-}
-end_time <- Sys.time()
-code_time(start_time, end_time)
+
 
 
 
@@ -586,7 +597,7 @@ code_time(start_time, end_time)
 alias <- c('mip_sectors',
            'mip_outputs',
            'mip_coef',
-           #'mip_added_value',
+           'mip_added_value',
            'mip_leontief',
            'mip_backward_linkages',
            'mip_foward_linkages',
@@ -597,7 +608,7 @@ alias <- c('mip_sectors',
 db <- list(db_sectors,
            db_outputs,
            db_sectors_coef,
-           #db_added_value,
+           db_added_value,
            db_leontief,
            backward_linkages,
            foward_linkages,
@@ -616,6 +627,6 @@ for (c in countries){
       writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
     }
     
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/', alias[i], '.xlsx'), overwrite = TRUE)
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[i], '.xlsx'), overwrite = TRUE)
   }
 }
