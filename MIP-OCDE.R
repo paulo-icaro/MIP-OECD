@@ -37,7 +37,7 @@ path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebo
 setwd(path)
 
 # --- Funcao Cronometro --- #
-source('RAIS/FunÁ„o - code_time.R', encoding = 'LATIN1')                # FunÁ„o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+source('RAIS/Fun√ß√£o - code_time.R', encoding = 'LATIN1')                # Fun√ß√£o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -66,6 +66,7 @@ db_sectors =
   foward_linkages =
   backward_dispersion =
   foward_dispersion =
+  pull_index =
   vector(mode = 'list', length = length(countries)) 
 
 
@@ -85,6 +86,7 @@ db_sectors_matrix =
   foward_linkages_matrix =
   backward_dispersion_matrix =
   foward_dispersion_matrix =
+  pull_index_matrix =
   vector(mode = 'list', length = length(24))
 
 #perc_change_oecd <- data.frame(matrix(nrow = 48600))                                            # Coluna que recebera as variacoes percentuais
@@ -94,8 +96,8 @@ db_sectors_matrix =
 # Colunas e Linhas cujas combinacoes serao desconsideradas #
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
-dim_row <- read_excel(path = paste0(path, 'MIP_OECD/Dimensıes.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
-dim_col <- read_excel(path = paste0(path, 'MIP_OECD/Dimensıes.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
+dim_row <- read_excel(path = paste0(path, 'MIP_OECD/Dimens√µes.xlsx'), sheet = "linha", col_names=TRUE) %>% filter(!ROW %in% remove_row)
+dim_col <- read_excel(path = paste0(path, 'MIP_OECD/Dimens√µes.xlsx'), sheet = "coluna", col_names=TRUE) %>% filter(!COL %in% remove_col)
 # dim_row <- unique(database[[1]]) 
 # dim_col <- unique(database[[1]])
 
@@ -126,7 +128,7 @@ for (c in length(countries)){
     database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Government
     database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Exports
     database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Imports
-
+    
     
     # Armazenamento das matrizes de dados temporais filtrados em listas
     db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row, dim_col))                       # Matrix Sectors
@@ -179,14 +181,23 @@ for (c in length(countries)){
         foward_dispersion_matrix[[t]] = cbind(foward_dispersion_matrix[[t]], (inner_piece_fd/44)^(.5) / mean(x = db_leontief_matrix[[t]][w,]))
         
         if (w == 45){
-            backward_dispersion_matrix[[t]] = matrix(data = as.matrix(backward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Backward_Linkage'))
-            foward_dispersion_matrix[[t]] = matrix(data = as.matrix(foward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Foward_Linkage'))
+          backward_dispersion_matrix[[t]] = matrix(data = as.matrix(backward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Backward_Dispersion'))
+          foward_dispersion_matrix[[t]] = matrix(data = as.matrix(foward_dispersion_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Foward_Dispersion'))
         }
       }
       
     }
     
-
+    # Indices de Tracao
+    max_backward_dispersion = max(backward_dispersion_matrix[[t]])
+    max_foward_dispersion = max(backward_dispersion_matrix[[t]])
+    
+    ratio_backward = matrix(data = 1, nrow = 45, ncol = 1) - backward_dispersion_matrix[[t]]/max_backward_dispersion
+    ratio_foward = matrix(data = 1, nrow = 45, ncol = 1) - foward_dispersion_matrix[[t]]/max_foward_dispersion
+    
+    pull_index_matrix[[t]] = backward_linkages_matrix[[t]] * ratio_backward + foward_linkages_matrix[[t]] * ratio_foward
+    pull_index_matrix[[t]] = matrix(data = as.matrix(pull_index_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col, 'Pull_Index'))
+    
     
     # Renomeando os elementos da lista temporal. Cada elemento da lista recebera a data referente ao ano da matriz
     names(db_sectors_matrix)[t] =
@@ -204,6 +215,7 @@ for (c in length(countries)){
       names(foward_linkages_matrix)[t] =
       names(backward_dispersion_matrix)[t] =
       names(foward_dispersion_matrix)[t] =
+      names(pull_index_matrix)[t] =
       (1994+t)
     
   }
@@ -225,6 +237,7 @@ for (c in length(countries)){
   foward_linkages[[c]] = foward_linkages_matrix
   backward_dispersion[[c]] = backward_dispersion_matrix
   foward_dispersion[[c]] = foward_dispersion_matrix
+  pull_index[[c]] = pull_index_matrix
   
   
   # Renomeando os elementos da lista de paises. Cada lista de cada pais recebera o nome do pais respectivo
@@ -243,6 +256,7 @@ for (c in length(countries)){
     names(foward_linkages)[c] =
     names(backward_dispersion)[c] =
     names(foward_dispersion)[c] =
+    names(pull_index)[c] =
     countries[c]
   
   # Liberando memoria quando o ultimo pais for avaliado
@@ -256,7 +270,10 @@ for (c in length(countries)){
        db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
        db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix, backward_dispersion_matrix, foward_dispersion_matrix,
        
-       I
+       I,
+       
+       max_backward_dispersion, max_foward_dispersion, ratio_backward, ratio_foward, pull_index_matrix
+       
     )
   }
   
@@ -332,7 +349,7 @@ for (c in 1:length(countries)){
     )
     
     ggsave(filename = paste0('Variables Evolution - Sector ', dim_row[i, 1], '.png'),
-           path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1∞ Semestre/Economia Regional/Projeto/Plots/Evolucao_Variaveis',
+           path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1¬∞ Semestre/Economia Regional/Projeto/Plots/Evolucao_Variaveis',
            width = 3200,
            height = 1500,
            units = 'px'
@@ -352,32 +369,49 @@ ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimna
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_backward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 ranking_matrix_foward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
+ranking_matrix_pull_index = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col), 1995:2018))
 
 for (c in 1:length(countries)){
   for (t in 1:24){
-    ranking_output_sectors = 46 - rank(x = (db_outputs[[c]][[t]]))                                # Ranking por Produto
+    ranking_output_sectors = 46 - rank(x = db_outputs[[c]][[t]])                                  # Ranking por Produto
     ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])                        # Ranking Indice de Ligacao para Tras
     ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])                            # Ranking Indice de Ligacao para Frente
     ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])                         # Ranking Indice de Dispersao para Tras
     ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])                             # Ranking Indice de Dispersao para Frente
+    ranking_pull_index = 46 - rank(x = pull_index[[c]][[t]])                                           # Ranking Indice de Tracao
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
     ranking_matrix_foward_linkages[,t] = ranking_foward_linkages
     ranking_matrix_backward_dispersion[,t] = ranking_backward_dispersion
     ranking_matrix_foward_dispersion[,t] = ranking_foward_dispersion
+    ranking_matrix_pull_index[,t] = ranking_pull_index
     
   }
   
   if (c == length(countries)){
-    ranking_list = list(ranking_matrix_output, ranking_matrix_backward_linkages, ranking_matrix_foward_linkages, ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion)
-    rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages, ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_output, ranking_matrix_backward_linkages, ranking_matrix_foward_linkages, ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion)
+    ranking_list = list(ranking_matrix_output,
+                        ranking_matrix_backward_linkages,
+                        ranking_matrix_foward_linkages,
+                        ranking_matrix_backward_dispersion,
+                        ranking_matrix_foward_dispersion,
+                        ranking_matrix_pull_index)
+    
+    rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages,
+       ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_output,
+       ranking_matrix_backward_linkages, ranking_matrix_foward_linkages,
+       ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion, ranking_matrix_pull_index)
   }
 }
 
 
 wb = createWorkbook(creator = 'pi')
-ranking_alias = c('Ranking_Outputs', 'Ranking_Backward_Linkages', 'Ranking_Foward_Linkages', 'Ranking_Backward_Dispersion', 'Ranking_Foward_Dispersion')
+ranking_alias = c('Ranking_Outputs',
+                  'Ranking_Backward_Linkages',
+                  'Ranking_Foward_Linkages',
+                  'Ranking_Backward_Dispersion',
+                  'Ranking_Foward_Dispersion',
+                  'Ranking_Pull_Index')
 for (x in 1:length(ranking_list)){
   addWorksheet(wb = wb, sheetName = ranking_alias[x])
   writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
@@ -428,7 +462,7 @@ for (c in length(countries)){                                                   
       }
       Plots <- ggplot() + 
         
-        # Caso deseje plotar para mais de um paÌs, basta copiar o trecho abaixo
+        # Caso deseje plotar para mais de um pa√≠s, basta copiar o trecho abaixo
         geom_line(data = as.data.frame(x = w),
                   #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
                   aes(x = 1995:2018, y = w, color = 'Brazil'),
@@ -450,7 +484,7 @@ for (c in length(countries)){                                                   
               panel.background = element_rect(fill = '#F2F3F4')
         )
       
-      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1∞ Semestre/Economia Regional/Projeto/Plots/Coeficientes'),
+      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1¬∞ Semestre/Economia Regional/Projeto/Plots/Coeficientes'),
              filename = paste0('Setor ', dim_row[i,1], ' para ', dim_col[j,1], '.png'),
              width = 3000,
              height = 1300,
@@ -480,7 +514,7 @@ for (c in length(countries)){                                                   
     }
     Plots <- ggplot() + 
       
-      # Caso deseje plotar para mais de um paÌs, basta copiar o trecho abaixo
+      # Caso deseje plotar para mais de um pa√≠s, basta copiar o trecho abaixo
       geom_line(data = as.data.frame(x = w),
                 #data = database[[c]] %>% filter(COL %in% dim_col[c,1] & ROW %in% dim_row[r,1]), 
                 aes(x = 1995:2018, y = w),
@@ -491,7 +525,7 @@ for (c in length(countries)){                                                   
                          values = c('#45B39D'),#, '#D35400'),
                          labels(NULL)) +
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('EvoluÁ„o do Produto (', dim_col[j,1], ')'),
+      labs(title = paste0('Evolu√ß√£o do Produto (', dim_col[j,1], ')'),
            #subtitle = paste0('From ', dim_row[i,1], ' to ', dim_col[j,1]),
            x = NULL,
            y = 'Output') +
@@ -502,7 +536,7 @@ for (c in length(countries)){                                                   
             panel.background = element_rect(fill = '#F2F3F4')
       )
     
-    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1∞ Semestre/Economia Regional/Projeto/Plots/Produtos'),
+    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1¬∞ Semestre/Economia Regional/Projeto/Plots/Produtos'),
            filename = paste0('Evolucao_Produto_', dim_col[j,1], '.png'),
            width = 3000,
            height = 1300,
@@ -526,12 +560,12 @@ for(c in length(countries)){
     linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
     Plots_Linkages = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
       geom_point() + 
-      geom_texthline(yintercept = 1, label = 'Indice de LigaÁ„o para Tr·s = 1', hjust = 0.02, vjust = -0.15) + 
-      geom_textvline(xintercept = 1, label = 'Indice de LigaÁ„o para Frente = 1', hjust = 0.98, vjust = -0.15) +
+      geom_texthline(yintercept = 1, label = 'Indice de Liga√ß√£o para Tr√°s = 1', hjust = 0.02, vjust = -0.15) + 
+      geom_textvline(xintercept = 1, label = 'Indice de Liga√ß√£o para Frente = 1', hjust = 0.98, vjust = -0.15) +
       geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-      labs(title = paste0('Õndices de LigaÁ„o (', 1994+t, ')'), 
-           x = 'Õndice de LigaÁ„o para Tr·s',
-           y = 'Õndice de LigaÁ„o para Frente') + 
+      labs(title = paste0('√çndices de Liga√ß√£o (', 1994+t, ')'), 
+           x = '√çndice de Liga√ß√£o para Tr√°s',
+           y = '√çndice de Liga√ß√£o para Frente') + 
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
@@ -540,11 +574,11 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
     
     ggsave(plot = Plots_Linkages,
-            path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1∞ Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
-            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
-            width = 4500,
-            height = 2500,
-            units = 'px'
+           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1¬∞ Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
+           filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
+           width = 4500,
+           height = 2500,
+           units = 'px'
     )
     
     
@@ -552,12 +586,12 @@ for(c in length(countries)){
     dispersion = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
     Plots_Dispersion = ggplot(data = as.data.frame(x = dispersion), aes(x = dispersion[,1], y = dispersion[,2], label = rownames(dispersion))) +
       geom_point() + 
-      geom_texthline(yintercept = 1, label = 'Indice de Dispers„o para Tr·s = 1', hjust = 0.08, vjust = -0.15) + 
-      geom_textvline(xintercept = 1, label = 'Indice de Dispers„o para Frente = 1', hjust = 0.98, vjust = -0.15) +
+      geom_texthline(yintercept = 1, label = 'Indice de Dispers√£o para Tr√°s = 1', hjust = 0.08, vjust = -0.15) + 
+      geom_textvline(xintercept = 1, label = 'Indice de Dispers√£o para Frente = 1', hjust = 0.98, vjust = -0.15) +
       geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-      labs(title = paste0('Õndices de Dispers„o (', 1994+t, ')'), 
-           x = 'Õndice de Dispers„o para Tr·s',
-           y = 'Õndice de Dispers„o para Frente') + 
+      labs(title = paste0('√çndices de Dispers√£o (', 1994+t, ')'), 
+           x = '√çndice de Dispers√£o para Tr√°s',
+           y = '√çndice de Dispers√£o para Frente') + 
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
@@ -566,7 +600,7 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
     
     ggsave(plot = Plots_Dispersion,
-           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1∞ Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
+           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1¬∞ Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
            filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
            width = 4500,
            height = 2500,
@@ -593,28 +627,30 @@ code_time(start_time, end_time)
 # --- Savings --- #
 # --------------- #
 
-# AtenÁ„o !!! - Rode este code apenas se desejar salvar os resultados
+# Aten√ß√£o !!! - Rode este code apenas se desejar salvar os resultados
 alias <- c('mip_sectors',
            'mip_outputs',
            'mip_coef',
-           'mip_added_value',
+           'mip_value_added',
            'mip_leontief',
            'mip_backward_linkages',
            'mip_foward_linkages',
            'mip_backward_dispersion',
-           'mip_foward_dispersion'
-           )
+           'mip_foward_dispersion',
+           'mip_pull_index'
+)
 
 db <- list(db_sectors,
            db_outputs,
            db_sectors_coef,
-           db_added_value,
+           db_value_added,
            db_leontief,
            backward_linkages,
            foward_linkages,
            backward_dispersion,
-           foward_dispersion
-           )
+           foward_dispersion,
+           pull_index
+)
 
 names(db) <- alias
 
