@@ -341,8 +341,9 @@ for (c in 1:length(countries)){
                          values = c('#ff1a1a', '#5900cc', '#73e600', '#e63e00', '#333333', '#0035e6', '#24c8bf'),
                          labels = c('Produto', 'Cons. Intermediário', 'Cons. Famílias', 'Investimentos', 'Governo', 'Exportações', 'Importações'),
                          name = 'Variáveis') +
-      scale_x_continuous(breaks = seq(1996, 2018, 2)) +
-      labs(title = 'Evolução - Variáveis Intermediárias e Finais', subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'USD, Milhões')
+      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
+      labs(title = 'Evolução - Variáveis Intermediárias e Finais - USD Milhões', subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'USD, Milhões')
     
     
     ggsave(filename = paste0('Evolução das Variáveis - Setor ', dim_row_cod[i, 1], '.png'),
@@ -481,7 +482,7 @@ for (c in length(countries)){                                                   
               panel.background = element_rect(fill = '#F2F3F4')
         )
       
-      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Coeficientes'),
+      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Resultados/Coeficientes'),
              filename = paste0(dim_row_cod[i,1], ' para ', dim_col_cod[j,1], '.png'),
              width = 3000,
              height = 1300,
@@ -500,13 +501,13 @@ code_time(start_time, end_time)
 # --- Plots - Outputs --- #
 start_time <- Sys.time()
 for (c in length(countries)){                                                             # c para pais
-  for (j in 1:45){                                                                        # j para coluna
+  for (i in 1:45){                                                                        # j para coluna
     for (t in 1:24){                                                                      # t para o ano
       if (t == 1) {
-        w = db_outputs[[c]][[t]][,j]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
+        w = db_outputs[[c]][[t]][i,]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
       } 
       else {
-        w = rbind(w, db_outputs[[c]][[t]][,j])
+        w = rbind(w, db_outputs[[c]][[t]][i,])
       }
     }
     Plots <- ggplot() + 
@@ -522,10 +523,8 @@ for (c in length(countries)){                                                   
                          values = c('#45B39D'),#, '#D35400'),
                          labels(NULL)) +
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      labs(title = paste0('Evolução do Produto (Setor: ', dim_col_name[j,1], ')'),
-           #subtitle = paste0('From ', dim_row_cod[i,1], ' to ', dim_col_cod[j,1]),
-           x = NULL,
-           y = 'Produto') +
+      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
+      labs(title = paste0('Evolução do Produto - USD Milhões'), subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'Produto') +
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
@@ -533,8 +532,8 @@ for (c in length(countries)){                                                   
             panel.background = element_rect(fill = '#F2F3F4')
       )
     
-    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Produtos'),
-           filename = paste0('Evolucao_Produto_', dim_col_cod[j,1], '.png'),
+    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Resultados/Produtos'),
+           filename = paste0('Evolucao_Produto_', dim_col_cod[i,1], '.png'),
            width = 3000,
            height = 1300,
            units = 'px'
@@ -573,8 +572,8 @@ for(c in length(countries)){
     ggsave(plot = Plots_Linkages,
            path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Ligacao'),
            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
-           width = 4500,
-           height = 2500,
+           width = 3200,
+           height = 1500,
            units = 'px'
     )
     
@@ -599,8 +598,8 @@ for(c in length(countries)){
     ggsave(plot = Plots_Dispersion,
            path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/1° Semestre/Economia Regional/Projeto/Plots/Indice_Dispersao'),
            filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
-           width = 4500,
-           height = 2500,
+           width = 3200,
+           height = 1500,
            units = 'px'
     )
     
@@ -608,12 +607,6 @@ for(c in length(countries)){
 }
 end_time <- Sys.time()
 code_time(start_time, end_time)
-
-
-
-
-
-# --- Plots - Backward and Foward Dispersion --- #
 
 
 
