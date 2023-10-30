@@ -524,7 +524,7 @@ for (c in length(countries)){                                                   
                          labels(NULL)) +
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
       scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
-      labs(title = paste0('Evolução do Produto - USD Milhões'), subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'Produto') +
+      labs(title = paste0('Evolução - Produto - USD Milhões'), subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'Produto') +
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
             axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
