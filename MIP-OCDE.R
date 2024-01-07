@@ -123,7 +123,7 @@ for (c in length(countries)){
   for (t in 1:24){
     
     # Separamento das bases
-<<<<<<< HEAD
+
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))       # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))            # Database Outputs
     database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))          # Database Added Value
@@ -145,7 +145,7 @@ for (c in length(countries)){
     db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Government"))             # Matrix Government
     db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Exports"))                      # Matrix Exports
     db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Imports"))                      # Matrix Imports
-=======
+
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
     database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))            # Database Added Value
@@ -168,7 +168,6 @@ for (c in length(countries)){
     db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Government"))                 # Matrix Government
     db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Exports"))                          # Matrix Exports
     db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Imports"))                          # Matrix Imports
->>>>>>> 353d9bd346924382e752fbac1be7eddf22222655
     
     
     # Loop para calcular e armazenar os coeficientes
