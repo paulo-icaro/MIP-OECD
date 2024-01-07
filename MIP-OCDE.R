@@ -37,7 +37,7 @@ path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebo
 setwd(path)
 
 # --- Funcao Cronometro --- #
-source('RAIS/FunÁ„o - code_time.R', encoding = 'LATIN1')                # Fun√ß√£o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+source('Analises_Socioeconomicas/Scripts/Funcao - code_time.R', encoding = 'LATIN1')                # Fun√ß√£o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -123,19 +123,19 @@ for (c in length(countries)){
   for (t in 1:24){
     
     # Separamento das bases
-    database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
-    database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
-    database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))            # Database Added Value
-    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))        # Database Intermediate Consumption
-    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Households Consumption
-    database_investment <- database[c(1,2,3,5,7)] %>% filter((COL == 'GFCF') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Investment
-    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))             # Database Government
-    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Exports
-    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))                # Database Imports
+    database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))       # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
+    database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))            # Database Outputs
+    database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))          # Database Added Value
+    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))      # Database Intermediate Consumption
+    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))            # Database Households Consumption
+    database_investment <- database[c(1,2,3,5,7)] %>% filter((COL == 'GFCF') & !(ROW %in% remove_row) & (Time == 1994+t))           # Database Investment
+    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))           # Database Government
+    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Exports
+    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Imports
     
     
     # Armazenamento das matrizes de dados temporais filtrados em listas
-    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))                       # Matrix Sectors
+    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))                   # Matrix Sectors
     db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Output"))                       # Matrix Outputs
     db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 45 , ncol = 1, dimnames = c(dim_col_cod, 'Value Added'))         # Matrix Added Values
     db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Intermediate Consumption"))   # Matrix Intermediate Consumption
@@ -376,7 +376,7 @@ for (c in 1:length(countries)){
     ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])                            # Ranking Indice de Ligacao para Frente
     ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])                         # Ranking Indice de Dispersao para Tras
     ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])                             # Ranking Indice de Dispersao para Frente
-    ranking_pull_index = 46 - rank(x = pull_index[[c]][[t]])                                           # Ranking Indice de Tracao
+    ranking_pull_index = 46 - rank(x = pull_index[[c]][[t]])                                      # Ranking Indice de Tracao
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
@@ -415,6 +415,31 @@ for (x in 1:length(ranking_list)){
   writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
 }
 saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Resultados/mip_rankings.xlsx'), overwrite = TRUE)
+
+
+
+# --- Medias - Indice de Ligacao e Dispersao --- #
+mean_bl = read_excel(path = 'MIP_OECD/Results/An·lises.xlsx', sheet = 'Õndices de LigaÁ„o', range = 'Z2:Z47')
+mean_fl = read_excel(path = 'MIP_OECD/Results/An·lises.xlsx', sheet = 'Õndices de LigaÁ„o', range = 'Z52:Z97')
+
+mean_linkages = cbind(mean_bl, mean_fl)
+colnames(x = mean_linkages) = c('mean_bl', 'mean_fl')
+rownames(x = mean_linkages) = as.matrix(dim_col_cod)
+
+Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
+  geom_point() + 
+  geom_texthline(yintercept = 1, label = 'Indice de LigaÁ„o para Tr·s = 1', hjust = 0.02, vjust = -0.15) + 
+  geom_textvline(xintercept = 1, label = 'Indice de LigaÁ„o para Frente = 1', hjust = 0.98, vjust = -0.15) +
+  geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  labs(title = 'Õndices de LigaÁ„o (1995-2018)', 
+       x = 'Õndice de LigaÁ„o para Tr·s',
+       y = 'Õndice de LigaÁ„o para Frente') + 
+  theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+        axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
+        axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+        panel.background = element_rect(fill = '#F2F3F4')) +
+  scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
+  scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
 
 
 
@@ -460,7 +485,7 @@ for (c in length(countries)){                                                   
       }
       Plots <- ggplot() + 
         
-        # Caso deseje plotar para mais de um pa√≠s, basta copiar o trecho abaixo
+        # Caso deseje plotar para mais de um pais, basta copiar o trecho abaixo
         geom_line(data = as.data.frame(x = w),
                   #data = database[[c]] %>% filter(COL %in% dim_col_cod[c,1] & ROW %in% dim_row_cod[r,1]), 
                   aes(x = 1995:2018, y = w, color = 'Brazil'),
