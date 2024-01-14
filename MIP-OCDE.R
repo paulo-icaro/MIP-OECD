@@ -32,12 +32,11 @@ library(geomtextpath)
 
 
 # --- Paths --- #
-path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
-path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
+path = 'C:/Users/Paulo/Documents/Repositorios/'                         # PC/Notebook
 setwd(path)
 
 # --- Funcao Cronometro --- #
-source('Analises_Socioeconomicas/Scripts/Funcao - code_time.R', encoding = 'LATIN1')                # FunÃ§Ã£o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+source('Analises_Socioeconomicas/Scripts/Funcao - code_time.R', encoding = 'LATIN1')                # Funcao que contabiliza o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -318,7 +317,7 @@ code_time(start_time, end_time)     #Cronometro
 # ------------------------------- #
 
 
-# --- Evolucao - Produto Agricola, Consumo Intermediario e Componentes da Demanda ---- #
+# --- Evolucao - Variaveis Intermediarias e Finais ---- #
 #start_time = Sys.time()
 for (c in 1:length(countries)){
   for (i in 1:45){
@@ -371,7 +370,7 @@ for (c in 1:length(countries)){
     
     
     ggsave(filename = paste0('Evolução das Variáveis - Setor ', dim_row_cod[i, 1], '.png'),
-           path = 'G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Plots/Evolucao_Variaveis',
+           path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Evolucao_Variaveis',
            width = 3200,
            height = 1500,
            units = 'px'
@@ -442,7 +441,7 @@ saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Resultados/mip_rankings.xlsx
 
 
 
-# --- Medias - Indice de Ligacao e Dispersao --- #
+# --- Medias - Indice de Ligacao --- #
 mean_bl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z2:Z47')
 mean_fl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z52:Z97')
 
@@ -454,7 +453,7 @@ Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_li
   geom_point() + 
   geom_texthline(yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
   geom_textvline(xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  geom_label_repel(size = 2.8, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
   labs(title = 'Índices de Ligação (1995-2018)', 
        x = 'Índice de Ligação para Trás',
        y = 'Índice de Ligação para Frente') + 
@@ -464,6 +463,14 @@ Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_li
         panel.background = element_rect(fill = '#F2F3F4')) +
   scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
   scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
+
+
+  ggsave(filename = 'Índices de Ligação (1995-2018).png',
+         path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
+         width = 3200,
+         height = 2000,
+        units = 'px'
+  )
 
 
 
