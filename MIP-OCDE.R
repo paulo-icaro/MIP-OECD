@@ -330,7 +330,6 @@ for (c in 1:length(countries)){
         government = db_government[[c]][[t]][i,1]
         exports = db_exports[[c]][[t]][i,1]
         imports = db_imports[[c]][[t]][i,1]
-        
       }
       else{
         output = rbind(output, db_outputs[[c]][[t]][i,1])
@@ -353,11 +352,12 @@ for (c in 1:length(countries)){
       geom_line(data = as.data.frame(x = government), mapping = aes(x = 1995:2018, y = government, color = 'Governo'), linetype = 'dashed', linewidth = 0.7) +
       geom_line(data = as.data.frame(x = exports), mapping = aes(x = 1995:2018, y = exports, color = 'Exportações'), linetype = 'dashed', linewidth = 0.7) +
       geom_line(data = as.data.frame(x = imports), mapping = aes(x = 1995:2018, y = imports, color = 'Importações'), linetype = 'dashed', linewidth = 0.7) +
-      theme(title = element_text(family = 'Segoe UI', size = 14),
-            text = element_text(family = 'Segoe UI', face = 'italic', size = 14),                 # Formatacao geral
-            axis.title.y = element_text(size = 12.5 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 12.5, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.x = element_text(angle = 30, margin = margin(t = 12), size = 12.5),         # Textos do eixo x 
+      theme(title = element_text(family = 'Segoe UI', size = 16),
+            text = element_text(family = 'Segoe UI', face = 'italic', size = 15),                 # Formatacao geral
+            axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.y = element_text(size = 13),                                              # Textos do eixo y
+            axis.text.x = element_text(angle = 30, margin = margin(t = 12), size = 13),         # Textos do eixo x 
             panel.background = element_rect(fill = '#F2F3F4')
       ) +
       scale_color_manual(breaks = c('Produto', 'Cons. Intermediário', 'Cons. Famílias', 'Investimentos', 'Governo', 'Exportações', 'Importações'),
@@ -371,7 +371,7 @@ for (c in 1:length(countries)){
     
     ggsave(filename = paste0('Evolução das Variáveis - Setor ', dim_row_cod[i, 1], '.png'),
            path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Evolucao_Variaveis',
-           width = 3200,
+           width = 3000,
            height = 1800,
            units = 'px'
     )
@@ -451,15 +451,15 @@ rownames(x = mean_linkages) = as.matrix(dim_col_cod)
 
 Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
   geom_point() + 
-  geom_texthline(yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
-  geom_textvline(xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 3.7, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  geom_texthline(size = 5.5, yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
+  geom_textvline(size = 5.5, xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
+  geom_label_repel(size = 5.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
   labs(title = 'Índices de Ligação (1995-2018)', 
        x = 'Índice de Ligação para Trás',
        y = 'Índice de Ligação para Frente') + 
-  theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-        axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-        axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
+  theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 19),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+        axis.title.y = element_text(size = 19 , margin = margin(r = 15)),                   # Titulo do eixo y
+        axis.title.x = element_text(size = 19, margin = margin(t = 15)),                    # Titulo do eixo x
         panel.background = element_rect(fill = '#F2F3F4')) +
   scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
   scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
@@ -467,8 +467,8 @@ Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_li
 
   ggsave(filename = 'Indices_Ligacao (1995-2018).png',
          path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
-         width = 3000,
-         height = 2000,
+         width = 4300,
+         height = 3500,
         units = 'px'
   )
 
@@ -538,7 +538,7 @@ for (c in length(countries)){                                                   
               panel.background = element_rect(fill = '#F2F3F4')
         )
       
-      ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Plots/Coeficientes'),
+      ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Coeficientes'),
              filename = paste0(dim_row_cod[i,1], ' para ', dim_col_cod[j,1], '.png'),
              width = 3000,
              height = 1300,
@@ -555,7 +555,6 @@ code_time(start_time, end_time)
 
 
 # --- Plots - Outputs --- #
-start_time <- Sys.time()
 for (c in length(countries)){                                                             # c para pais
   for (i in 1:45){                                                                        # j para coluna
     for (t in 1:24){                                                                      # t para o ano
@@ -582,22 +581,21 @@ for (c in length(countries)){                                                   
       scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
       labs(title = paste0('Evolução - Produto - USD Milhões'), subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'Produto') +
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
+            axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.y = element_text(size = 13),                                              # Textos do eixo y
+            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 13),         # Textos do eixo x 
             panel.background = element_rect(fill = '#F2F3F4')
       )
     
-    ggsave(path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Plots/Produtos'),
+    ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
            filename = paste0('Evolucao_Produto_', dim_col_cod[i,1], '.png'),
            width = 3000,
-           height = 1300,
+           height = 1800,
            units = 'px'
     )
   }
 }
-end_time <- Sys.time()
-code_time(start_time, end_time)
 
 
 
@@ -626,7 +624,7 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
     
     ggsave(plot = Plots_Linkages,
-           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Plots/Produtos'),
+           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
            width = 3200,
            height = 1500,
@@ -652,7 +650,7 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
     
     ggsave(plot = Plots_Dispersion,
-           path = paste0('G:/Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Plots/Produtos'),
+           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
            filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
            width = 3200,
            height = 1500,
@@ -673,7 +671,7 @@ code_time(start_time, end_time)
 # --- Savings --- #
 # --------------- #
 
-# AtenÃ§Ã£o !!! - Rode este code apenas se desejar salvar os resultados
+# Atenção !!! - Rode este code apenas se desejar salvar os resultados
 alias <- c('mip_sectors',
            'mip_outputs',
            'mip_coef',
