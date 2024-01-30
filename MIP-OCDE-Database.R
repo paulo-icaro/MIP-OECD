@@ -2,13 +2,13 @@
 # === Input-Output Tables - OECD Countries === #
 # ============================================ #
 
-# ----------------------------- #
-# --- Coletar dados da OCDE --- #
-# ----------------------------- #
+# =============================== #
+# === 0.Coletar dados da OCDE === #
+# =============================== #
 
-# -------------------------- #
 # --- Autor: Paulo Icaro --- #
-# -------------------------- #
+
+
 # Link com a estrutura do dataset: https://stats.oecd.org/restsdmx/sdmx.ashx/GetDataStructure/IOTS_2021
 # Link onde os dados sao consultados: https://stats.oecd.org/restsdmx/sdmx.ashx/GetData/IOTS_2021
 # Link para as matrizes no site da OCDE: https://stats.oecd.org/
@@ -21,10 +21,12 @@
 
 
 
+
+
 # ----------------- #
 # --- Libraries --- #
 # ----------------- #
-library(OECD)                                                 # OECD API
+library(OECD)                                                           # OECD API
 library(openxlsx)
 
 
@@ -34,7 +36,7 @@ path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebo
 setwd(path)
 
 # --- Funcao Cronometro --- #
-source('RAIS/Fun√ß√£o - code_time.R', encoding = 'LATIN1')                # Fun√ß√£o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
+source('RAIS/FunÁ„o - code_time.R', encoding = 'LATIN1')                # FunÁ„o que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
 
 
 
@@ -51,7 +53,7 @@ source('RAIS/Fun√ß√£o - code_time.R', encoding = 'LATIN1')                # Fun√
 options(timeout = 500000)            
  
 # Variavel com os nomes dos paises
-# Lista com nomes dos pa√≠ses por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
+# Lista com nomes dos paÌses por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
 countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
               'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
               'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',

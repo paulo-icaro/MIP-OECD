@@ -2,9 +2,13 @@
 # === Input-Output Tables - OECD Countries === #
 # ============================================ #
 
-# -------------------------- #
+# ======================================================= #
+# === 1. Conexao com a database e calculo dos indices === #
+# ======================================================= #
+
+
 # --- Autor: Paulo Icaro --- #
-# -------------------------- #
+
 
 # Link com a estrutura do dataset: https://stats.oecd.org/restsdmx/sdmx.ashx/GetDataStructure/IOTS_2021
 # Link onde os dados sao consultados: https://stats.oecd.org/restsdmx/sdmx.ashx/GetData/IOTS_2021
@@ -16,6 +20,8 @@
 # Obs:
 # Aparentemente, diferente de outras bases, nao da para visualizar essa no navegador devido ao limite
 # do tempo de conexao. Mas e sim possivel acessar os dados utilizando a funcao get_dataset
+
+
 
 
 
@@ -32,11 +38,12 @@ library(geomtextpath)
 
 
 # --- Paths --- #
-path = 'C:/Users/Paulo/Documents/Repositorios/'                         # PC/Notebook
+path = 'C:/Users/Paulo/Documents/Repositorios/'         # PC/Notebook
 setwd(path)
 
 # --- Funcao Cronometro --- #
-source('Analises_Socioeconomicas/Scripts/Funcao - code_time.R', encoding = 'LATIN1')                # Funcao que contabiliza o tempo do code // Se precisar use setwd para mudar o path raiz
+# Funcao que contabiliza o tempo do code // Se precisar use setwd para mudar o path raiz
+source('Analises_Socioeconomicas/Scripts/Funcao - code_time.R')                
 
 
 
@@ -96,11 +103,11 @@ db_sectors_matrix =
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 
-dim_row_cod <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE, range = 'A1:A46')
-dim_col_cod <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE, range = 'A1:A46')
+dim_row_cod <- read_excel(path = paste0(path, 'MIP_OECD/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'A1:A46')
+dim_col_cod <- read_excel(path = paste0(path, 'MIP_OECD/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'A1:A46')
 
-dim_row_name <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46') 
-dim_col_name <- read_excel(path = paste0(path, 'MIP_OECD/Dimensões.xlsx'), sheet = "coluna", col_names=TRUE, range = 'B1:B46')
+dim_row_name <- read_excel(path = paste0(path, 'MIP_OECD/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46') 
+dim_col_name <- read_excel(path = paste0(path, 'MIP_OECD/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'B1:B46')
 # dim_row_cod <- unique(database[[1]]) 
 # dim_col_cod <- unique(database[[1]])
 
@@ -110,7 +117,7 @@ I = diag(x = 1, nrow = 45, ncol = 45)
 
 
 
-# --- Preparacao da Database --- #
+# --- Preparacao da Database e Calculo de Indices de Ligacao, Dispersao e Tracao --- #
 
 # Loop Principal - Filtragem por Pais #
 start_time <- Sys.time()
@@ -160,8 +167,8 @@ for (c in length(countries)){
     db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))                       # Matrix Sectors
     db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Output"))                           # Matrix Outputs
     db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 45 , ncol = 1, dimnames = c(dim_col_cod, 'Value Added'))             # Matrix Added Values
-    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 45, ncol = 45)                                                             # Matrix Intermediate Consumption (1° Stage)
-    db_int_cons_matrix[[t]] <- matrix(data = rowSums(x = db_int_cons_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Intermediate Consumption"))  # Matrix Intermediate Consumption (2° Stage)
+    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 45, ncol = 45)                                                             # Matrix Intermediate Consumption (1� Stage)
+    db_int_cons_matrix[[t]] <- matrix(data = rowSums(x = db_int_cons_matrix[[t]]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Intermediate Consumption"))  # Matrix Intermediate Consumption (2� Stage)
     db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Household"))                    # Matrix Households Consumption
     db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Investment"))                 # Matrix Investment
     db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Government"))                 # Matrix Government
@@ -179,8 +186,6 @@ for (c in length(countries)){
         if (w == 45){matrix(data = db_sectors_coef_matrix[[t]], nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))}
       }
     }
-    
-    
     
     # Matriz Leontief // (I - A)^(-1)
     db_leontief_matrix[[t]] = matrix(data = solve(I - db_sectors_coef_matrix[[t]]), nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))
@@ -297,6 +302,12 @@ for (c in length(countries)){
        db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
        db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix, backward_dispersion_matrix, foward_dispersion_matrix,
        
+       inner_piece_bd, inner_piece_fd,
+       
+       remove_col, remove_row,
+       
+       t, w, c,
+       
        I,
        
        max_backward_dispersion, max_foward_dispersion, ratio_backward, ratio_foward, pull_index_matrix
@@ -312,75 +323,48 @@ code_time(start_time, end_time)     #Cronometro
 
 
 
-# ------------------------------- #
-# --- Data Analysis and Plots --- #
-# ------------------------------- #
+# --- Savings --- #
+# Aten��o !!! - Rode este code apenas se desejar salvar os resultados
+alias <- c('mip_sectors',
+           'mip_outputs',
+           'mip_coef',
+           'mip_value_added',
+           'mip_leontief',
+           'mip_backward_linkages',
+           'mip_foward_linkages',
+           'mip_backward_dispersion',
+           'mip_foward_dispersion',
+           'mip_pull_index'
+)
 
+db <- list(db_sectors,
+           db_outputs,
+           db_sectors_coef,
+           db_value_added,
+           db_leontief,
+           backward_linkages,
+           foward_linkages,
+           backward_dispersion,
+           foward_dispersion,
+           pull_index
+)
 
-# --- Evolucao - Variaveis Intermediarias e Finais ---- #
-#start_time = Sys.time()
-for (c in 1:length(countries)){
-  for (i in 1:45){
+names(db) <- alias
+
+for (c in countries){
+  for (i in 1:lenght(alias)){
+    wb <- createWorkbook(creator = 'pi')
+    
     for (t in 1:24){
-      if (t == 1){
-        output = db_outputs[[c]][[t]][i,1]
-        int_cons = db_int_cons[[c]][[t]][i,1]
-        household = db_household[[c]][[t]][i,1]
-        investment = db_investment[[c]][[t]][i,1]
-        government = db_government[[c]][[t]][i,1]
-        exports = db_exports[[c]][[t]][i,1]
-        imports = db_imports[[c]][[t]][i,1]
-      }
-      else{
-        output = rbind(output, db_outputs[[c]][[t]][i,1])
-        int_cons = rbind(int_cons, db_int_cons[[c]][[t]][i,1])
-        household = rbind(household, db_household[[c]][[t]][i,1])
-        investment = rbind(investment, db_investment[[c]][[t]][i,1])
-        government = rbind(government, db_government[[c]][[t]][i,1])
-        exports = rbind(exports, db_exports[[c]][[t]][i,1])
-        imports = rbind(imports, db_imports[[c]][[t]][i,1])
-      }
+      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
+      writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
     }
     
-    plot_variables_evolution =
-      ggplot() +
-      
-      geom_line(data = as.data.frame(x = output), mapping = aes(x = 1995:2018, y = output, color = 'Produto'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = int_cons), mapping = aes(x = 1995:2018, y = int_cons, color = 'Cons. Intermediário'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = household), mapping = aes(x = 1995:2018, y = household, color = 'Cons. Famílias'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = investment), mapping = aes(x = 1995:2018, y = investment, color = 'Investimentos'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = government), mapping = aes(x = 1995:2018, y = government, color = 'Governo'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = exports), mapping = aes(x = 1995:2018, y = exports, color = 'Exportações'), linetype = 'dashed', linewidth = 0.7) +
-      geom_line(data = as.data.frame(x = imports), mapping = aes(x = 1995:2018, y = imports, color = 'Importações'), linetype = 'dashed', linewidth = 0.7) +
-      theme(title = element_text(family = 'Segoe UI', size = 16),
-            text = element_text(family = 'Segoe UI', face = 'italic', size = 15),                 # Formatacao geral
-            axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.y = element_text(size = 13),                                              # Textos do eixo y
-            axis.text.x = element_text(angle = 30, margin = margin(t = 12), size = 13),         # Textos do eixo x 
-            panel.background = element_rect(fill = '#F2F3F4')
-      ) +
-      scale_color_manual(breaks = c('Produto', 'Cons. Intermediário', 'Cons. Famílias', 'Investimentos', 'Governo', 'Exportações', 'Importações'),
-                         values = c('#ff1a1a', '#5900cc', '#73e600', '#e63e00', '#333333', '#0035e6', '#24c8bf'),
-                         labels = c('Produto', 'Cons. Intermediário', 'Cons. Famílias', 'Investimentos', 'Governo', 'Exportações', 'Importações'),
-                         name = 'Variáveis') +
-      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
-      labs(title = 'Evolução - Variáveis Intermediárias e Finais - USD Milhões', subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'USD, Milhões')
-    
-    
-    ggsave(filename = paste0('Evolução das Variáveis - Setor ', dim_row_cod[i, 1], '.png'),
-           path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Evolucao_Variaveis',
-           width = 3000,
-           height = 1800,
-           units = 'px'
-    )
-    
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[i], '.xlsx'), overwrite = TRUE)
   }
-  if (c == length(countries)){rm(output, int_cons, household, investment, government, exports, imports)}
 }
-#end_time = Sys.time()
-#code_time(start_time, end_time)
+
+
 
 
 
@@ -425,7 +409,6 @@ for (c in 1:length(countries)){
   }
 }
 
-
 wb = createWorkbook(creator = 'pi')
 ranking_alias = c('Ranking_Outputs',
                   'Ranking_Backward_Linkages',
@@ -437,276 +420,23 @@ for (x in 1:length(ranking_list)){
   addWorksheet(wb = wb, sheetName = ranking_alias[x])
   writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
 }
-saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Resultados/mip_rankings.xlsx'), overwrite = TRUE)
+saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/mip_rankings.xlsx'), overwrite = TRUE)
 
 
-
-# --- Medias - Indice de Ligacao --- #
-mean_bl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z2:Z47')
-mean_fl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z52:Z97')
-
-mean_linkages = cbind(mean_bl, mean_fl)
-colnames(x = mean_linkages) = c('mean_bl', 'mean_fl')
-rownames(x = mean_linkages) = as.matrix(dim_col_cod)
-
-Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
-  geom_point() + 
-  geom_texthline(size = 5.5, yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
-  geom_textvline(size = 5.5, xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 5.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-  labs(title = 'Índices de Ligação (1995-2018)', 
-       x = 'Índice de Ligação para Trás',
-       y = 'Índice de Ligação para Frente') + 
-  theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 19),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-        axis.title.y = element_text(size = 19 , margin = margin(r = 15)),                   # Titulo do eixo y
-        axis.title.x = element_text(size = 19, margin = margin(t = 15)),                    # Titulo do eixo x
-        panel.background = element_rect(fill = '#F2F3F4')) +
-  scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
-  scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
-
-
-  ggsave(filename = 'Indices_Ligacao (1995-2018).png',
-         path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
-         width = 4300,
-         height = 3500,
-        units = 'px'
-  )
 
 
 
 # --- Indices de Ligacao Puros --- #
-Ajj = matrix(data = db_sectors_coef[[c]][[t]][1,1], nrow = 1, ncol = 1, dimnames = c(dim_row_cod[1,1], dim_col_cod[1,1]))
-Arr = matrix(data = db_sectors_coef[[c]][[t]][-1,-1], nrow = 44, ncol = 44, dimnames = c(dim_row_cod[-1,1], dim_col_cod[-1,1]))
-Arj = matrix(data = db_sectors_coef[[c]][[t]][2:45,1], nrow = 44, ncol = 1, dimnames = c(dim_row_cod[2:45,1], dim_col_cod[1,1]))
-Ajr = matrix(data = db_sectors_coef[[t]][[t]][1,2:45], nrow = 1, ncol = 44, dimnames = c(dim_row_cod[1,1], dim_col_cod[2:45,1]))
-
-delta_j = matrix(data = (1-Ajj)^(-1), nrow = 1, ncol = 1, dimnames = c(dim_row_cod[1,1], dim_col_cod[1,1]))
-delta_r = matrix(data = solve(diag(x = 1, nrow = 44, ncol = 44) - Arr), nrow = 44, ncol = 44, dimnames = c(dim_row_cod[-1,1], dim_col_cod[-1,1]))
-
-Yj = db_outputs[[c]][[t]][,i]
-Yr = db_outputs[[c]][[t]][,-i]
-
-PBL = delta_r %*% Arj %*% delta_j %*% Yj
-PFL = delta_j %*% Ajr %*% delta_r %*% Yr
-
-
-
-
-
-
-# --- Plots - Coeficientes --- #
-
-# Em aes o argumento color e empregado de maneira nao usual.
-# Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
-# font_import(): importa todas as fontes do sistema
-# loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
-# windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
-# Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-start_time <- Sys.time()
-for (c in length(countries)){                                                               # c para pais
-  for (i in 1:45){                                                                           # i para linha
-    for (j in 1:45){                                                                         # j para coluna
-      for (t in 1:24){                                                                      # t para o ano
-        if (t == 1) {
-          w = db_sectors_coef[[c]][[t]][i:i,j:j]                                           # Gerar plot da serie de coeficientes
-        } 
-        else {
-          w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
-        }
-      }
-      Plots <- ggplot() + 
-        
-        # Caso deseje plotar para mais de um pais, basta copiar o trecho abaixo
-        geom_line(data = as.data.frame(x = w),
-                  #data = database[[c]] %>% filter(COL %in% dim_col_cod[c,1] & ROW %in% dim_row_cod[r,1]), 
-                  aes(x = 1995:2018, y = w, color = 'Brazil'),
-                  linetype = 'dashed',
-                  size = .75) +
-        geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-        scale_color_manual(breaks = c('Brazil'),#, 'South Korea'),
-                           values = c('#45B39D'),#, '#D35400'),
-                           labels(NULL)) +
-        scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-        labs(title = 'Evolução do Coeficiente',
-             subtitle = paste0(dim_row_cod[i,1], ' para ', dim_col_cod[j,1]),
-             x = NULL,
-             y = 'Coeficiente') +
-        theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-              axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-              axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-              axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 15),         # Textos do eixo x 
-              panel.background = element_rect(fill = '#F2F3F4')
-        )
-      
-      ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Coeficientes'),
-             filename = paste0(dim_row_cod[i,1], ' para ', dim_col_cod[j,1], '.png'),
-             width = 3000,
-             height = 1300,
-             units = 'px'
-      )
-    }
-  }
-}
-end_time <- Sys.time()
-code_time(start_time, end_time)
-
-
-
-
-
-# --- Plots - Outputs --- #
-for (c in length(countries)){                                                             # c para pais
-  for (i in 1:45){                                                                        # j para coluna
-    for (t in 1:24){                                                                      # t para o ano
-      if (t == 1) {
-        w = db_outputs[[c]][[t]][i,]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
-      } 
-      else {
-        w = rbind(w, db_outputs[[c]][[t]][i,])
-      }
-    }
-    Plots <- ggplot() + 
-      
-      # Caso deseje plotar para mais de um pais, basta copiar o trecho abaixo
-      geom_line(data = as.data.frame(x = w),
-                #data = database[[c]] %>% filter(COL %in% dim_col_cod[c,1] & ROW %in% dim_row_cod[r,1]), 
-                aes(x = 1995:2018, y = w),
-                linetype = 'dashed',
-                size = .75) +
-      geom_point(data = as.data.frame(x = w), x = 1995:2018, y = w) +
-      scale_color_manual(breaks = NULL,
-                         values = c('#45B39D'),#, '#D35400'),
-                         labels(NULL)) +
-      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
-      labs(title = paste0('Evolução - Produto - USD Milhões'), subtitle = paste0('Setor: ', dim_row_name[i,1]), x = NULL, y = 'Produto') +
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
-            axis.text.y = element_text(size = 13),                                              # Textos do eixo y
-            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 13),         # Textos do eixo x 
-            panel.background = element_rect(fill = '#F2F3F4')
-      )
-    
-    ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
-           filename = paste0('Evolucao_Produto_', dim_col_cod[i,1], '.png'),
-           width = 3000,
-           height = 1800,
-           units = 'px'
-    )
-  }
-}
-
-
-
-
-
-# --- Plots - Backward and Foward Linkages and Dispersion --- #
-# https://www.statology.org/geom_vline-label/
-start_time <- Sys.time() 
-for(c in length(countries)){
-  for(t in 1:24){
-    
-    linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
-    Plots_Linkages = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
-      geom_point() + 
-      geom_texthline(yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
-      geom_textvline(xintercept = 1, label = 'Indice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-      labs(title = paste0('Índices de Ligação (', 1994+t, ')'), 
-           x = 'Índice de Ligação para Trás',
-           y = 'Índice de Ligação para Frente') + 
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            panel.background = element_rect(fill = '#F2F3F4')) +
-      scale_x_continuous(breaks = seq(floor(min(linkages[,1])), ceiling(max(linkages[,1])), 0.1)) + 
-      scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
-    
-    ggsave(plot = Plots_Linkages,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
-           filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
-           width = 3200,
-           height = 1500,
-           units = 'px'
-    )
-    
-    
-    
-    dispersion = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
-    Plots_Dispersion = ggplot(data = as.data.frame(x = dispersion), aes(x = dispersion[,1], y = dispersion[,2], label = rownames(dispersion))) +
-      geom_point() + 
-      geom_texthline(yintercept = 1, label = 'Indice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
-      geom_textvline(xintercept = 1, label = 'Indice de Dispersão para Frente = 1', hjust = 0.98, vjust = -0.15) +
-      geom_label_repel(label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-      labs(title = paste0('Índices de Dispersão (', 1994+t, ')'), 
-           x = 'Índice de Dispersão para Trás',
-           y = 'Índice de Dispersão para Frente') + 
-      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-            axis.title.y = element_text(size = 16 , margin = margin(r = 15)),                   # Titulo do eixo y
-            axis.title.x = element_text(size = 16, margin = margin(t = 15)),                    # Titulo do eixo x
-            panel.background = element_rect(fill = '#F2F3F4')) +
-      scale_x_continuous(breaks = seq(floor(min(dispersion[,1])), ceiling(max(dispersion[,1])), 0.5)) + 
-      scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
-    
-    ggsave(plot = Plots_Dispersion,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
-           filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
-           width = 3200,
-           height = 1500,
-           units = 'px'
-    )
-    
-  }
-}
-end_time <- Sys.time()
-code_time(start_time, end_time)
-
-
-
-
-
-
-# --------------- #
-# --- Savings --- #
-# --------------- #
-
-# Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors',
-           'mip_outputs',
-           'mip_coef',
-           'mip_value_added',
-           'mip_leontief',
-           'mip_backward_linkages',
-           'mip_foward_linkages',
-           'mip_backward_dispersion',
-           'mip_foward_dispersion',
-           'mip_pull_index'
-)
-
-db <- list(db_sectors,
-           db_outputs,
-           db_sectors_coef,
-           db_value_added,
-           db_leontief,
-           backward_linkages,
-           foward_linkages,
-           backward_dispersion,
-           foward_dispersion,
-           pull_index
-)
-
-names(db) <- alias
-
-for (c in countries){
-  for (i in 1:length(alias)){
-    wb <- createWorkbook(creator = 'pi')
-    
-    for (t in 1:24){
-      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
-      writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
-    }
-    
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Resultados/', alias[i], '.xlsx'), overwrite = TRUE)
-  }
-}
+# Ajj = matrix(data = db_sectors_coef[[c]][[t]][1,1], nrow = 1, ncol = 1, dimnames = c(dim_row_cod[1,1], dim_col_cod[1,1]))
+# Arr = matrix(data = db_sectors_coef[[c]][[t]][-1,-1], nrow = 44, ncol = 44, dimnames = c(dim_row_cod[-1,1], dim_col_cod[-1,1]))
+# Arj = matrix(data = db_sectors_coef[[c]][[t]][2:45,1], nrow = 44, ncol = 1, dimnames = c(dim_row_cod[2:45,1], dim_col_cod[1,1]))
+# Ajr = matrix(data = db_sectors_coef[[t]][[t]][1,2:45], nrow = 1, ncol = 44, dimnames = c(dim_row_cod[1,1], dim_col_cod[2:45,1]))
+# 
+# delta_j = matrix(data = (1-Ajj)^(-1), nrow = 1, ncol = 1, dimnames = c(dim_row_cod[1,1], dim_col_cod[1,1]))
+# delta_r = matrix(data = solve(diag(x = 1, nrow = 44, ncol = 44) - Arr), nrow = 44, ncol = 44, dimnames = c(dim_row_cod[-1,1], dim_col_cod[-1,1]))
+# 
+# Yj = db_outputs[[c]][[t]][,i]
+# Yr = db_outputs[[c]][[t]][,-i]
+# 
+# PBL = delta_r %*% Arj %*% delta_j %*% Yj
+# PFL = delta_j %*% Ajr %*% delta_r %*% Yr
