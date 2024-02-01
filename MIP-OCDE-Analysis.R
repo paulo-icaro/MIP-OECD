@@ -129,29 +129,6 @@ for (c in length(countries)){
   for (t in 1:24){
     
     # Separamento das bases
-
-    database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))       # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
-    database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))            # Database Outputs
-    database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))          # Database Added Value
-    database_int_cons <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'TTL_INT_FNL') & (Time == 1994+t))      # Database Intermediate Consumption
-    database_household <- database[c(1,2,3,5,7)] %>% filter((COL == 'HFCE') & !(ROW %in% remove_row) & (Time == 1994+t))            # Database Households Consumption
-    database_investment <- database[c(1,2,3,5,7)] %>% filter((COL == 'GFCF') & !(ROW %in% remove_row) & (Time == 1994+t))           # Database Investment
-    database_government <- database[c(1,2,3,5,7)] %>% filter((COL == 'GGFC') & !(ROW %in% remove_row) & (Time == 1994+t))           # Database Government
-    database_exports <- database[c(1,2,3,5,7)] %>% filter((COL == 'EXPO') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Exports
-    database_imports <- database[c(1,2,3,5,7)] %>% filter((COL == 'IMPO') & !(ROW %in% remove_row) & (Time == 1994+t))              # Database Imports
-    
-    
-    # Armazenamento das matrizes de dados temporais filtrados em listas
-    db_sectors_matrix[[t]] <- matrix(data = as.matrix(database_sectors[3]), nrow = 45, ncol = 45, dimnames = c(dim_row_cod, dim_col_cod))                   # Matrix Sectors
-    db_outputs_matrix[[t]] <- matrix(data = as.matrix(database_outputs[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Output"))                       # Matrix Outputs
-    db_value_added_matrix[[t]] <- matrix(data = as.matrix(database_value_added[3]), nrow = 45 , ncol = 1, dimnames = c(dim_col_cod, 'Value Added'))         # Matrix Added Values
-    db_int_cons_matrix[[t]] <- matrix(data = as.matrix(database_int_cons[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Intermediate Consumption"))   # Matrix Intermediate Consumption
-    db_household_matrix[[t]] <- matrix(data = as.matrix(database_household[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Household"))                # Matrix Households Consumption
-    db_investment_matrix[[t]] <- matrix(data = as.matrix(database_investment[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Investment"))             # Matrix Investment
-    db_government_matrix[[t]] <- matrix(data = as.matrix(database_government[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Government"))             # Matrix Government
-    db_exports_matrix[[t]] <- matrix(data = as.matrix(database_exports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Exports"))                      # Matrix Exports
-    db_imports_matrix[[t]] <- matrix(data = as.matrix(database_imports[3]), nrow = 45, ncol = 1, dimnames = c(dim_col_cod, "Imports"))                      # Matrix Imports
-
     database_sectors <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & !(ROW %in% remove_row) & (Time == 1994+t))         # Database Sectors // Remocao das combinacoes cujas variaveis nao serao de interesse
     database_outputs <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'OUTPUT') & (Time == 1994+t))              # Database Outputs
     database_value_added <- database[c(1,2,3,5,7)] %>% filter(!(COL %in% remove_col) & (ROW == 'VALU') & (Time == 1994+t))            # Database Added Value
@@ -291,30 +268,6 @@ for (c in length(countries)){
     names(pull_index)[c] =
     countries[c]
   
-  # Liberando memoria quando o ultimo pais for avaliado
-  if (c == length(countries)){
-    rm(database,
-       
-       database_sectors, database_outputs, database_value_added, database_int_cons, database_household,
-       database_investment, database_government, database_exports, database_imports,
-       
-       db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix,
-       db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
-       db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix, backward_dispersion_matrix, foward_dispersion_matrix,
-       
-       inner_piece_bd, inner_piece_fd,
-       
-       remove_col, remove_row,
-       
-       t, w, c,
-       
-       I,
-       
-       max_backward_dispersion, max_foward_dispersion, ratio_backward, ratio_foward, pull_index_matrix
-       
-    )
-  }
-  
 }
 end_time <- Sys.time()
 code_time(start_time, end_time)     #Cronometro
@@ -325,34 +278,20 @@ code_time(start_time, end_time)     #Cronometro
 
 # --- Savings --- #
 # Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors',
-           'mip_outputs',
-           'mip_coef',
-           'mip_value_added',
-           'mip_leontief',
-           'mip_backward_linkages',
-           'mip_foward_linkages',
-           'mip_backward_dispersion',
-           'mip_foward_dispersion',
-           'mip_pull_index'
-)
+alias <- c('sectors', 'outputs', 'sectors_coef', 'value_added', 'exports',
+           'imports', 'int_cons', 'household', 'government', 'investment', 
+           'leontief', 'backward_linkages', 'foward_linkages', 'backward_dispersion', 'foward_dispersion', 'pull_index')
 
-db <- list(db_sectors,
-           db_outputs,
-           db_sectors_coef,
-           db_value_added,
-           db_leontief,
-           backward_linkages,
-           foward_linkages,
-           backward_dispersion,
-           foward_dispersion,
-           pull_index
+db <- list(db_sectors, db_outputs, db_sectors_coef, db_value_added, db_exports,
+           db_imports, db_int_cons, db_household, db_government, db_investment, 
+           db_leontief, backward_linkages, foward_linkages, backward_dispersion, foward_dispersion, pull_index
+           
 )
 
 names(db) <- alias
 
-for (c in countries){
-  for (i in 1:lenght(alias)){
+for (c in length(countries)){
+  for (i in 1:length(alias)){
     wb <- createWorkbook(creator = 'pi')
     
     for (t in 1:24){
@@ -360,7 +299,7 @@ for (c in countries){
       writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
     }
     
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[i], '.xlsx'), overwrite = TRUE)
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[i], '_', countries[c], '.xlsx'), overwrite = TRUE)
   }
 }
 
@@ -376,14 +315,22 @@ ranking_matrix_backward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dim
 ranking_matrix_foward_dispersion = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 ranking_matrix_pull_index = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 
+
+ranking_alias = c('Ranking_Outputs',
+                  'Ranking_Backward_Linkages',
+                  'Ranking_Foward_Linkages',
+                  'Ranking_Backward_Dispersion',
+                  'Ranking_Foward_Dispersion',
+                  'Ranking_Pull_Index')
+
 for (c in 1:length(countries)){
   for (t in 1:24){
-    ranking_output_sectors = 46 - rank(x = db_outputs[[c]][[t]])                                  # Ranking por Produto
-    ranking_backward_linkages = 46 - rank(x = backward_linkages[[c]][[t]])                        # Ranking Indice de Ligacao para Tras
-    ranking_foward_linkages = 46 - rank(x = foward_linkages[[c]][[t]])                            # Ranking Indice de Ligacao para Frente
-    ranking_backward_dispersion = rank(x = backward_dispersion[[c]][[t]])                         # Ranking Indice de Dispersao para Tras
-    ranking_foward_dispersion = rank(x = foward_dispersion[[c]][[t]])                             # Ranking Indice de Dispersao para Frente
-    ranking_pull_index = 46 - rank(x = pull_index[[c]][[t]])                                      # Ranking Indice de Tracao
+    ranking_output_sectors = 46 - rank(x = db[['outputs']][[c]][[t]])                                  # Ranking por Produto
+    ranking_backward_linkages = 46 - rank(x = db[['backward_linkages']][[c]][[t]])                        # Ranking Indice de Ligacao para Tras
+    ranking_foward_linkages = 46 - rank(x = db[['foward_linkages']][[c]][[t]])                            # Ranking Indice de Ligacao para Frente
+    ranking_backward_dispersion = rank(x = db[['backward_dispersion']][[c]][[t]])                         # Ranking Indice de Dispersao para Tras
+    ranking_foward_dispersion = rank(x = db[['foward_dispersion']][[c]][[t]])                             # Ranking Indice de Dispersao para Frente
+    ranking_pull_index = 46 - rank(x = db[['pull_index']][[c]][[t]])                                      # Ranking Indice de Tracao
     
     ranking_matrix_output[,t] = ranking_output_sectors
     ranking_matrix_backward_linkages[,t] = ranking_backward_linkages
@@ -391,36 +338,63 @@ for (c in 1:length(countries)){
     ranking_matrix_backward_dispersion[,t] = ranking_backward_dispersion
     ranking_matrix_foward_dispersion[,t] = ranking_foward_dispersion
     ranking_matrix_pull_index[,t] = ranking_pull_index
-    
   }
   
-  if (c == length(countries)){
-    ranking_list = list(ranking_matrix_output,
-                        ranking_matrix_backward_linkages,
-                        ranking_matrix_foward_linkages,
-                        ranking_matrix_backward_dispersion,
-                        ranking_matrix_foward_dispersion,
-                        ranking_matrix_pull_index)
-    
-    rm(ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages,
-       ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_output,
-       ranking_matrix_backward_linkages, ranking_matrix_foward_linkages,
-       ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion, ranking_matrix_pull_index)
+  
+  ranking_list = list(ranking_matrix_output,
+                      ranking_matrix_backward_linkages,
+                      ranking_matrix_foward_linkages,
+                      ranking_matrix_backward_dispersion,
+                      ranking_matrix_foward_dispersion,
+                      ranking_matrix_pull_index)
+  
+  
+  wb = createWorkbook(creator = 'pi')
+  
+  for (x in 1:length(ranking_alias)){
+    addWorksheet(wb = wb, sheetName = ranking_alias[x])
+    writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
   }
+  saveWorkbook(wb = wb, file = paste0(path, paste0('MIP_OECD/Results/mip_rankings', '_', countries[c], '.xlsx')), overwrite = TRUE)
 }
 
-wb = createWorkbook(creator = 'pi')
-ranking_alias = c('Ranking_Outputs',
-                  'Ranking_Backward_Linkages',
-                  'Ranking_Foward_Linkages',
-                  'Ranking_Backward_Dispersion',
-                  'Ranking_Foward_Dispersion',
-                  'Ranking_Pull_Index')
-for (x in 1:length(ranking_list)){
-  addWorksheet(wb = wb, sheetName = ranking_alias[x])
-  writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
-}
-saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/mip_rankings.xlsx'), overwrite = TRUE)
+
+
+
+
+
+# Liberando memoria
+rm(database,
+   
+   database_sectors, database_outputs, database_value_added, database_exports, database_imports,
+   database_int_cons, database_household, database_government, database_investment,
+   
+   db_sectors_matrix, db_outputs_matrix, db_sectors_coef_matrix, db_value_added_matrix, db_int_cons_matrix,
+   db_household_matrix, db_investment_matrix, db_government_matrix, db_exports_matrix, db_imports_matrix,
+   db_leontief_matrix, backward_linkages_matrix, foward_linkages_matrix, backward_dispersion_matrix, foward_dispersion_matrix,
+   
+   db_sectors, db_outputs, db_sectors_coef, db_value_added, db_exports,
+   db_imports, db_int_cons, db_household, db_government, db_investment, 
+   db_leontief, backward_linkages, foward_linkages, backward_dispersion, foward_dispersion, pull_index,
+   
+   inner_piece_bd, inner_piece_fd,
+   
+   remove_col, remove_row,
+   
+   t, w, c,
+   
+   I,
+   
+   max_backward_dispersion, max_foward_dispersion, ratio_backward, ratio_foward, pull_index_matrix,
+   
+   ranking_output_sectors, ranking_backward_linkages, ranking_foward_linkages,
+   ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_output,
+   ranking_matrix_backward_linkages, ranking_matrix_foward_linkages,
+   ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion, ranking_matrix_pull_index,
+   
+   ranking_alias, alias
+   
+)
 
 
 
