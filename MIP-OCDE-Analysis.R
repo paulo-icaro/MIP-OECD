@@ -291,15 +291,15 @@ db <- list(db_sectors, db_outputs, db_sectors_coef, db_value_added, db_exports,
 names(db) <- alias
 
 for (c in length(countries)){
-  for (i in 1:length(alias)){
+  for (a in 1:length(alias)){
     wb <- createWorkbook(creator = 'pi')
     
     for (t in 1:24){
-      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
-      writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
+      addWorksheet(wb = wb, sheetName = paste0(alias[a], '_', (1994+t)))
+      writeData(wb = wb, sheet = paste0(alias[a], '_', (1994+t)), x = db[[a]][[c]][[t]], rowNames = TRUE)
     }
     
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[i], '_', countries[c], '.xlsx'), overwrite = TRUE)
+    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Results/', alias[a], '_', countries[c], '.xlsx'), overwrite = TRUE)
   }
 }
 
@@ -351,13 +351,12 @@ for (c in 1:length(countries)){
   
   wb = createWorkbook(creator = 'pi')
   
-  for (x in 1:length(ranking_alias)){
-    addWorksheet(wb = wb, sheetName = ranking_alias[x])
-    writeData(wb = wb, sheet = ranking_alias[x], x = ranking_list[[x]], rowNames = TRUE)
+  for (a in 1:length(ranking_alias)){
+    addWorksheet(wb = wb, sheetName = ranking_alias[a])
+    writeData(wb = wb, sheet = ranking_alias[a], x = ranking_list[[a]], rowNames = TRUE)
   }
   saveWorkbook(wb = wb, file = paste0(path, paste0('MIP_OECD/Results/mip_rankings', '_', countries[c], '.xlsx')), overwrite = TRUE)
 }
-
 
 
 
