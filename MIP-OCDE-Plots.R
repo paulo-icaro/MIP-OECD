@@ -399,6 +399,7 @@ animate(plot = Ranking_Plots,
         width = 800,
         height = 600,
         duration = 20,
+        #renderer = 
         device = 'png',
         renderer = gifski_renderer('plot.gif')
 )
