@@ -13,40 +13,54 @@
 
 
 
+# ----------------- #
+# --- Libraries --- #
+# ----------------- #
+library(tidyverse)
+library(extrafont) 
+library(ggrepel)
+library(plotly)
+library(geomtextpath)
+library(gganimate)
+library(gifski)
+
+
+
+
 # ------------------------------- #
 # --- Data Analysis and Plots --- #
 # ------------------------------- #
 
 # --- Execucao do script MIP-OCDE-Analysis --- #
-source('MIP-OCDE.R')
+source(file = paste0(getwd(),'/MIP-OCDE-Analysis.R'))
 
 # --- Evolucao - Variaveis Intermediarias e Finais ---- #
 for (c in 1:length(countries)){
   for (i in 1:45){
     for (t in 1:24){
       if (t == 1){
-        output = db_outputs[[c]][[t]][i,1]
-        int_cons = db_int_cons[[c]][[t]][i,1]
-        household = db_household[[c]][[t]][i,1]
-        investment = db_investment[[c]][[t]][i,1]
-        government = db_government[[c]][[t]][i,1]
-        exports = db_exports[[c]][[t]][i,1]
-        imports = db_imports[[c]][[t]][i,1]
+        output = db[[2]][[c]][[t]][i,1]
+        exports = db[[5]][[c]][[t]][i,1]
+        imports = db[[6]][[c]][[t]][i,1]
+        int_cons = db[[7]][[c]][[t]][i,1]
+        household = db[[8]][[c]][[t]][i,1]
+        government = db[[9]][[c]][[t]][i,1]
+        investment = db[[10]][[c]][[t]][i,1]
       }
       else{
-        output = rbind(output, db_outputs[[c]][[t]][i,1])
-        int_cons = rbind(int_cons, db_int_cons[[c]][[t]][i,1])
-        household = rbind(household, db_household[[c]][[t]][i,1])
-        investment = rbind(investment, db_investment[[c]][[t]][i,1])
-        government = rbind(government, db_government[[c]][[t]][i,1])
-        exports = rbind(exports, db_exports[[c]][[t]][i,1])
-        imports = rbind(imports, db_imports[[c]][[t]][i,1])
+        output = rbind(output, db[[2]][[c]][[t]][i,1])
+        exports = rbind(exports, db[[5]][[c]][[t]][i,1])
+        imports = rbind(imports, db[[6]][[c]][[t]][i,1])
+        int_cons = rbind(int_cons, db[[7]][[c]][[t]][i,1])
+        household = rbind(household, db[[8]][[c]][[t]][i,1])
+        government = rbind(government, db[[9]][[c]][[t]][i,1])
+        investment = rbind(investment, db[[10]][[c]][[t]][i,1])
+        
       }
     }
     
     plot_variables_evolution =
       ggplot() +
-      
       geom_line(data = as.data.frame(x = output), mapping = aes(x = 1995:2018, y = output, color = 'Produto'), linetype = 'dashed', linewidth = 0.7) +
       geom_line(data = as.data.frame(x = int_cons), mapping = aes(x = 1995:2018, y = int_cons, color = 'Cons. Intermediário'), linetype = 'dashed', linewidth = 0.7) +
       geom_line(data = as.data.frame(x = household), mapping = aes(x = 1995:2018, y = household, color = 'Cons. Famílias'), linetype = 'dashed', linewidth = 0.7) +
@@ -55,7 +69,7 @@ for (c in 1:length(countries)){
       geom_line(data = as.data.frame(x = exports), mapping = aes(x = 1995:2018, y = exports, color = 'Exportações'), linetype = 'dashed', linewidth = 0.7) +
       geom_line(data = as.data.frame(x = imports), mapping = aes(x = 1995:2018, y = imports, color = 'Importações'), linetype = 'dashed', linewidth = 0.7) +
       theme(title = element_text(family = 'Segoe UI', size = 16),
-            text = element_text(family = 'Segoe UI', face = 'italic', size = 15),                 # Formatacao geral
+            text = element_text(family = 'Segoe UI', face = 'italic', size = 15),               # Formatacao geral
             axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
             axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
             axis.text.y = element_text(size = 13),                                              # Textos do eixo y
@@ -79,83 +93,9 @@ for (c in 1:length(countries)){
     )
     
   }
+  
   if (c == length(countries)){rm(output, int_cons, household, investment, government, exports, imports)}
 }
-
-
-
-
-
-# --- Medias - Indice de Ligacao --- #
-mean_bl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z2:Z47')
-mean_fl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z52:Z97')
-
-mean_linkages = cbind(mean_bl, mean_fl)
-colnames(x = mean_linkages) = c('mean_bl', 'mean_fl')
-rownames(x = mean_linkages) = as.matrix(dim_col_cod)
-
-Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
-  geom_point() + 
-  geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Ligação para Trás = 1', hjust = 0.05, vjust = -0.15) + 
-  geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-  labs(#title = 'Índices de Ligação (1995-2018)', 
-    x = 'Índice de Ligação para Trás',
-    y = 'Índice de Ligação para Frente') + 
-  theme(title = element_text(family = 'Segoe UI', face = 'italic', size = 19),
-        text = element_text(family = 'Segoe UI', face = 'italic', size = 20),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-        axis.title.y = element_text(size = 20 , margin = margin(r = 15)),                   # Titulo do eixo y
-        axis.title.x = element_text(size = 20, margin = margin(t = 15)),                    # Titulo do eixo x
-        panel.background = element_rect(fill = '#F2F3F4')) +
-  scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
-  scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
-
-
-ggsave(filename = 'Indices_Ligacao (1995-2018).png',
-       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
-       width = 4600,
-       height = 3400,
-       units = 'px'
-)
-
-
-
-
-# --- Medias - Indice de Dispersão --- #
-mean_bd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z2:Z47')
-mean_fd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z52:Z97')
-
-mean_dispersion = cbind(mean_bd, mean_fd)
-colnames(x = mean_dispersion) = c('mean_bd', 'mean_fd')
-rownames(x = mean_dispersion) = as.matrix(dim_col_cod)
-
-Plots_Dispersion = ggplot(data = as.data.frame(x = mean_dispersion), aes(x = mean_dispersion[,1], y = mean_dispersion[,2], label = rownames(x = mean_dispersion))) +
-  geom_point() + 
-  geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
-  geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Dispersão para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
-  labs(#title = 'Índices de Dispersão (1995-2018)', 
-    x = 'Índice de Dispersão para Trás',
-    y = 'Índice de Dispersão para Frente') + 
-  theme(title = element_text(family = 'Segoe UI', face = 'italic', size = 19),
-        text = element_text(family = 'Segoe UI', face = 'italic', size = 20),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
-        axis.title.y = element_text(size = 20 , margin = margin(r = 15)),                   # Titulo do eixo y
-        axis.title.x = element_text(size = 20, margin = margin(t = 15)),                    # Titulo do eixo x
-        panel.background = element_rect(fill = '#F2F3F4')) +
-  scale_x_continuous(breaks = seq(floor(min(mean_dispersion[,1])), ceiling(max(mean_dispersion[,1])), 0.5)) + 
-  scale_y_continuous(breaks = seq(floor(min(mean_dispersion[,2])), ceiling(max(mean_dispersion[,2])), 0.5))
-
-
-ggsave(filename = 'Indice_Dispersao (1995-2018).png',
-       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao',
-       width = 4600,
-       height = 3400,
-       units = 'px'
-)
-
-
-
-
 
 
 
@@ -171,14 +111,14 @@ ggsave(filename = 'Indice_Dispersao (1995-2018).png',
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
 start_time <- Sys.time()
 for (c in length(countries)){                                                               # c para pais
-  for (i in 1:45){                                                                           # i para linha
-    for (j in 1:45){                                                                         # j para coluna
+  for (i in 1:45){                                                                          # i para linha
+    for (j in 1:45){                                                                        # j para coluna
       for (t in 1:24){                                                                      # t para o ano
         if (t == 1) {
-          w = db_sectors_coef[[c]][[t]][i:i,j:j]                                           # Gerar plot da serie de coeficientes
+          w = db[[3]][[c]][[t]][i:i,j:j]                                                    # Gerar plot da serie de coeficientes
         } 
         else {
-          w <- rbind(w, db_sectors_coef[[c]][[t]][i:i,j:j])
+          w <- rbind(w, db[[3]][[c]][[t]][i:i,j:j])
         }
       }
       Plots <- ggplot() + 
@@ -226,10 +166,10 @@ for (c in length(countries)){                                                   
   for (i in 1:45){                                                                        # j para coluna
     for (t in 1:24){                                                                      # t para o ano
       if (t == 1) {
-        w = db_outputs[[c]][[t]][i,]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
+        w = db[[2]][[c]][[t]][i,]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
       } 
       else {
-        w = rbind(w, db_outputs[[c]][[t]][i,])
+        w = rbind(w, db[[2]][[c]][[t]][i,])
       }
     }
     Plots <- ggplot() + 
@@ -270,11 +210,10 @@ for (c in length(countries)){                                                   
 
 # --- Plots - Backward and Foward Linkages and Dispersion --- #
 # https://www.statology.org/geom_vline-label/
-start_time <- Sys.time() 
 for(c in length(countries)){
   for(t in 1:24){
     
-    linkages = cbind(backward_linkages[[c]][[t]], foward_linkages[[c]][[t]])
+    linkages = cbind(db[[12]][[c]][[t]], db[[13]][[c]][[t]])
     Plots_Linkages = ggplot(data = as.data.frame(x = linkages), aes(x = linkages[,1], y = linkages[,2], label = rownames(linkages))) +
       geom_point() + 
       geom_texthline(yintercept = 1, label = 'Indice de Ligação para Trás = 1', hjust = 0.02, vjust = -0.15) + 
@@ -291,16 +230,16 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
     
     ggsave(plot = Plots_Linkages,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
+           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao'),
            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
-           width = 3200,
-           height = 1500,
+           width = 4500,
+           height = 2500,
            units = 'px'
     )
     
     
     
-    dispersion = cbind(backward_dispersion[[c]][[t]], foward_dispersion[[c]][[t]])
+    dispersion = cbind(db[[14]][[c]][[t]], db[[15]][[c]][[t]])
     Plots_Dispersion = ggplot(data = as.data.frame(x = dispersion), aes(x = dispersion[,1], y = dispersion[,2], label = rownames(dispersion))) +
       geom_point() + 
       geom_texthline(yintercept = 1, label = 'Indice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
@@ -317,63 +256,150 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
     
     ggsave(plot = Plots_Dispersion,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
+           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao'),
            filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
-           width = 3200,
-           height = 1500,
+           width = 4500,
+           height = 2500,
            units = 'px'
     )
     
   }
 }
-end_time <- Sys.time()
-code_time(start_time, end_time)
 
 
 
 
 
+# --- Medias - Indice de Ligacao --- #
+mean_bl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z2:Z47')
+mean_fl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z52:Z97')
 
-# --------------- #
-# --- Savings --- #
-# --------------- #
+mean_linkages = cbind(mean_bl, mean_fl)
+colnames(x = mean_linkages) = c('mean_bl', 'mean_fl')
+rownames(x = mean_linkages) = as.matrix(dim_col_cod)
 
-# Atenção !!! - Rode este code apenas se desejar salvar os resultados
-alias <- c('mip_sectors',
-           'mip_outputs',
-           'mip_coef',
-           'mip_value_added',
-           'mip_leontief',
-           'mip_backward_linkages',
-           'mip_foward_linkages',
-           'mip_backward_dispersion',
-           'mip_foward_dispersion',
-           'mip_pull_index'
+Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
+  geom_point() + 
+  geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Ligação para Trás = 1', hjust = 0.05, vjust = -0.15) + 
+  geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
+  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  labs(#title = 'Índices de Ligação (1995-2018)', 
+    x = 'Índice de Ligação para Trás',
+    y = 'Índice de Ligação para Frente') + 
+  theme(title = element_text(family = 'Segoe UI', face = 'italic', size = 19),
+        text = element_text(family = 'Segoe UI', face = 'italic', size = 20),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+        axis.title.y = element_text(size = 20 , margin = margin(r = 15)),                   # Titulo do eixo y
+        axis.title.x = element_text(size = 20, margin = margin(t = 15)),                    # Titulo do eixo x
+        panel.background = element_rect(fill = '#F2F3F4')) +
+  scale_x_continuous(breaks = seq(floor(min(mean_linkages[,1])), ceiling(max(mean_linkages[,1])), 0.1)) + 
+  scale_y_continuous(breaks = seq(floor(min(mean_linkages[,2])), ceiling(max(mean_linkages[,2])), 0.5))
+
+
+ggsave(filename = 'Indices_Ligacao (1995-2018).png',
+       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
+       width = 4600,
+       height = 3400,
+       units = 'px'
 )
 
-db <- list(db_sectors,
-           db_outputs,
-           db_sectors_coef,
-           db_value_added,
-           db_leontief,
-           backward_linkages,
-           foward_linkages,
-           backward_dispersion,
-           foward_dispersion,
-           pull_index
+
+
+
+
+# --- Medias - Indice de Dispersão --- #
+mean_bd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z2:Z47')
+mean_fd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z52:Z97')
+
+mean_dispersion = cbind(mean_bd, mean_fd)
+colnames(x = mean_dispersion) = c('mean_bd', 'mean_fd')
+rownames(x = mean_dispersion) = as.matrix(dim_col_cod)
+
+Plots_Dispersion = ggplot(data = as.data.frame(x = mean_dispersion), aes(x = mean_dispersion[,1], y = mean_dispersion[,2], label = rownames(x = mean_dispersion))) +
+  geom_point() + 
+  geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
+  geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Dispersão para Frente = 1', hjust = 0.98, vjust = -0.15) +
+  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  labs(#title = 'Índices de Dispersão (1995-2018)', 
+    x = 'Índice de Dispersão para Trás',
+    y = 'Índice de Dispersão para Frente') + 
+  theme(title = element_text(family = 'Segoe UI', face = 'italic', size = 19),
+        text = element_text(family = 'Segoe UI', face = 'italic', size = 20),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+        axis.title.y = element_text(size = 20 , margin = margin(r = 15)),                   # Titulo do eixo y
+        axis.title.x = element_text(size = 20, margin = margin(t = 15)),                    # Titulo do eixo x
+        panel.background = element_rect(fill = '#F2F3F4')) +
+  scale_x_continuous(breaks = seq(floor(min(mean_dispersion[,1])), ceiling(max(mean_dispersion[,1])), 0.5)) + 
+  scale_y_continuous(breaks = seq(floor(min(mean_dispersion[,2])), ceiling(max(mean_dispersion[,2])), 0.5))
+
+
+ggsave(filename = 'Indice_Dispersao (1995-2018).png',
+       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao',
+       width = 4600,
+       height = 3400,
+       units = 'px'
 )
 
-names(db) <- alias
 
-for (c in countries){
-  for (i in 1:length(alias)){
-    wb <- createWorkbook(creator = 'pi')
-    
+
+
+# --- Plot Rankings --- #
+alias = c(2, 5, 6, 7, 8, 9, 10)
+ranking_database_full = NULL
+
+for(c in 1:length(countries)){
+  for (a in 1:length(alias)){
     for (t in 1:24){
-      addWorksheet(wb = wb, sheetName = paste0(alias[i], '_', (1994+t)))
-      writeData(wb = wb, sheet = paste0(alias[i], '_', (1994+t)), x = db[[i]][[c]][[t]], rowNames = TRUE)
+      ranking_database_single = db[[alias[a]]][[c]][[t]]
+      ranking_database_full = cbind(ranking_database_full, ranking_database_single)
+      if(t == 24){rm(ranking_database_single)}
     }
-    
-    saveWorkbook(wb = wb, file = paste0(path, 'MIP_OECD/Resultados/', alias[i], '.xlsx'), overwrite = TRUE)
+    colnames(ranking_database_full) = c(1995:2018)
   }
 }
+
+
+ranking_database_plot = rownames_to_column(as.data.frame(ranking_database_full), 'Setor') %>%
+  gather(key = 'Ano', value = 'Valores', -Setor) %>%
+  group_by(Ano) %>%
+  slice_max(Valores, n = 5) %>%
+  mutate(Ranking = rank(-Valores)) %>%
+  filter(Ano == 1995)
+
+
+Ranking_Plots = 
+  ggplot(data = ranking_database_plot, aes(x = Ranking, group = Setor)) +
+  geom_tile(aes(y = Valores/2, height = Valores, width = 0.5, fill = as.factor(Setor)), alpha = 0.8) +    # 
+  scale_fill_manual(values = c('#F62A5B', '#2AAFF6', '#0EE9AA', 'yellow', '#F6652A','#BB0EE9', '#362AF6'), labels(NULL)) +
+  geom_text(aes(y = 0.01*Valores, label = Setor, hjust = 1.5, vjust = 0.5), size = 3) + 
+  geom_text(aes(y = 1.01*Valores, label = Valores, hjust = 0), size = 3) + 
+  scale_y_continuous(breaks = waiver(), n.breaks = 8) +
+  scale_x_reverse() +
+  coord_flip(expand = FALSE, clip = 'off') +
+  theme(
+    plot.margin = margin(t = 1.5, b = 1.5, r = 1.5, l = 3, unit = 'cm'),
+    title = element_text(family = 'Segoe UI', face = 'italic', size = 15),
+    text = element_text(family = 'Segoe UI', face = 'italic', size = 14, colour = 'black'),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    panel.grid.major.x = element_line(colour = 'gray', linewidth = 0.1),
+    panel.grid.minor.x = element_blank(),
+    panel.background = element_blank(),
+    legend.position = 'none'
+  ) +
+  transition_states(states = Ano, transition_length = 4, state_length = 1) +
+  labs(title = 'Evolução dos Setores com Maior Produto: {closest_state}', subtitle = 'Top -5') +
+  view_follow(fixed_x = TRUE)
+  
+   
+
+animate(plot = Ranking_Plots,
+        nframes = 100,
+        fps = 20,
+        width = 800,
+        height = 600,
+        duration = 20,
+        #renderer = 
+        device = 'png',
+        renderer = gifski_renderer('plot.gif')
+        )
