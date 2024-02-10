@@ -390,8 +390,8 @@ Ranking_Plots =
   transition_states(states = Ano, transition_length = 4, state_length = 1) +
   labs(title = 'Evolução dos Setores com Maior Produto: {closest_state}', subtitle = 'Top -5') +
   view_follow(fixed_x = TRUE)
-  
-   
+
+
 
 animate(plot = Ranking_Plots,
         nframes = 100,
@@ -399,7 +399,6 @@ animate(plot = Ranking_Plots,
         width = 800,
         height = 600,
         duration = 20,
-        #renderer = 
         device = 'png',
         renderer = gifski_renderer('plot.gif')
-        )
+)
