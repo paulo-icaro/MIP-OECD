@@ -24,6 +24,8 @@ library(geomtextpath)
 library(gganimate)
 library(gifski)
 
+# --- Funcao Percentual --- #
+source('Funcao-Percentual.R')
 
 
 
@@ -341,43 +343,40 @@ ggsave(filename = 'Indice_Dispersao (1995-2018).png',
 
 
 
-# --- Plot Rankings --- #
-alias = c(2, 5, 6, 7, 8, 9, 10)
-ranking_database_full = NULL
+# --- Top 5 - Setores Associados a Agricultura --- #
+agr_dmd_perc = agr_oft_perc = NULL
 
-for(c in 1:length(countries)){
-  for (a in 1:length(alias)){
-    for (t in 1:24){
-      ranking_database_single = db[[alias[a]]][[c]][[t]]
-      ranking_database_full = cbind(ranking_database_full, ranking_database_single)
-      if(t == 24){rm(ranking_database_single)}
-    }
-    colnames(ranking_database_full) = c(1995:2018)
+for (c in 1:length(countries)){
+  for (t in 1:24){
+    agr_dmd_perc = cbind(agr_dmd_perc, as.matrix(db[[3]][[c]][[t]][,1])/colSums(as.matrix(db[[3]][[c]][[t]][,1])))
+    agr_oft_perc = cbind(agr_oft_perc, as.matrix(db[[3]][[c]][[t]][1,])/colSums(as.matrix(db[[3]][[c]][[t]][1,])))
   }
+  colnames(x = agr_dmd_perc) = colnames(x = agr_oft_perc) = 1995:2018
+  rownames(x = agr_dmd_perc) = rownames(x = agr_oft_perc) = as.matrix(dim_row_name)
 }
 
 
-ranking_database_plot = rownames_to_column(as.data.frame(ranking_database_full), 'Setor') %>%
+
+ranking_database_plot = rownames_to_column(as.data.frame(agr_dmd_perc), 'Setor') %>%
   gather(key = 'Ano', value = 'Valores', -Setor) %>%
   group_by(Ano) %>%
   slice_max(Valores, n = 5) %>%
   mutate(Ranking = rank(-Valores)) %>%
-  filter(Ano == 1995)
-
+  mutate(`Participacao %` = percentual(Valores))
+  #filter(Ano == 1995)
 
 Ranking_Plots = 
   ggplot(data = ranking_database_plot, aes(x = Ranking, group = Setor)) +
   geom_tile(aes(y = Valores/2, height = Valores, width = 0.5, fill = as.factor(Setor)), alpha = 0.8) +    # 
-  scale_fill_manual(values = c('#F62A5B', '#2AAFF6', '#0EE9AA', 'yellow', '#F6652A','#BB0EE9', '#362AF6'), labels(NULL)) +
-  geom_text(aes(y = 0.01*Valores, label = Setor, hjust = 1.5, vjust = 0.5), size = 3) + 
-  geom_text(aes(y = 1.01*Valores, label = Valores, hjust = 0), size = 3) + 
-  scale_y_continuous(breaks = waiver(), n.breaks = 8) +
+  scale_fill_manual(values = c('#1C18EA', '#EA181B', '#18EA84', '#6418EA', '#18EAE0','#EA5118'), labels(NULL)) +
+  geom_text(aes(y = (1/1000)*Valores, label = Setor, hjust = 1.05, vjust = 0), size = 6.8) + 
+  geom_text(aes(y = 1.01*Valores, label = `Participacao %`, hjust = 0), size = 6.8) + 
+  scale_y_continuous(labels = scales::comma) +#, breaks = waiver(), n.breaks = 8) +
   scale_x_reverse() +
   coord_flip(expand = FALSE, clip = 'off') +
   theme(
-    plot.margin = margin(t = 1.5, b = 1.5, r = 1.5, l = 3, unit = 'cm'),
-    title = element_text(family = 'Segoe UI', face = 'italic', size = 15),
-    text = element_text(family = 'Segoe UI', face = 'italic', size = 14, colour = 'black'),
+    plot.margin = margin(t = 3, b = 5, r = 5, l = 20, unit = 'cm'),
+    title = element_text(family = 'Segoe UI', face = 'italic', size = 23, colour = 'black'),
     axis.title.y = element_blank(),
     axis.title.x = element_blank(),
     axis.text.y = element_blank(),
@@ -387,19 +386,24 @@ Ranking_Plots =
     panel.background = element_blank(),
     legend.position = 'none'
   ) +
-  transition_states(states = Ano, transition_length = 4, state_length = 1) +
-  labs(title = 'Evolução dos Setores com Maior Produto: {closest_state}', subtitle = 'Top -5') +
+  transition_states(states = Ano, transition_length = 18, state_length = 18) +
+  labs(title = 'Top 5 - Setores mais associados à agricultura', subtitle = 'Setor Agrícola ({closest_state})') +
   view_follow(fixed_x = TRUE)
 
 
+# Para renderizar vídeos em MP4, e preciso instalar o ffmpeg no computador. Link para download: https://www.gyan.dev/ffmpeg/builds/
+# A pasta deve se extraida e levada ao program_files do pc. Apos isso, deve ser especificado o path da pasta bin nas variaveis ambiente
+# da maquina. Para mais detalhes, ver: https://www.youtube.com/watch?v=WDCJzPfWx6o
+# Obs: a especificacao do path e crucial. Para checar se a instalacao funcionou, digite Sys.which('ffmpeg') no console do R
+plot_race_chart = animate(plot = Ranking_Plots,
+                          fps = 30,
+                          width = 1500,
+                          height = 1200,
+                          duration = 30,
+                          #renderer = 
+                          device = 'png',
+                          #renderer = gifski_renderer('plot.gif')
+                          renderer = ffmpeg_renderer()
+                          )
 
-animate(plot = Ranking_Plots,
-        nframes = 100,
-        fps = 20,
-        width = 800,
-        height = 600,
-        duration = 20,
-        #renderer = 
-        device = 'png',
-        renderer = gifski_renderer('plot.gif')
-)
+anim_save("animation.mp4", animation = plot_race_chart)
