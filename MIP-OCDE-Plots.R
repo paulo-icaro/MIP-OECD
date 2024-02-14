@@ -370,27 +370,28 @@ for (x in 1:length(agr_perc)){
 
   Ranking_Plots = 
     ggplot(data = ranking_database_plot, aes(x = Ranking, group = Setor)) +
-    geom_tile(aes(y = Valores/2, height = Valores, width = 0.5, fill = as.factor(Setor)), alpha = 0.8) +    # 
+    geom_tile(aes(y = Valores/2, height = Valores, width = 0.45, fill = as.factor(Setor)), alpha = 0.8) +    # 
     scale_fill_manual(values = c('#1C18EA', '#EA181B', '#18EA84', '#6418EA', '#18EAE0', '#EA5118', '#1a3c47', '#666666'), labels(NULL)) +
     geom_text(aes(y = (1/1000)*Valores, label = Setor, hjust = 1.05, vjust = 0), size = 6.8) + 
     geom_text(aes(y = 1.01*Valores, label = `Participacao %`, hjust = 0), size = 6.8) + 
-    scale_y_continuous(labels = scales::comma) +#, breaks = waiver(), n.breaks = 8) +
+    scale_y_continuous(labels = c('0%', '5%', '10%', '15%', '20%', '25%', '30%', '35%', '40%', '45%', '50%', '55%', '60%', '75%', '100%'), breaks = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.75, 1), n.breaks = 8) + #scales::comma) +
     scale_x_reverse() +
     coord_flip(expand = FALSE, clip = 'off') +
     theme(
       plot.margin = margin(t = 3, b = 5, r = 5, l = 20, unit = 'cm'),
       title = element_text(family = 'Segoe UI', face = 'italic', size = 23, colour = 'black'),
+      plot.caption = element_text(size = 20),
       axis.title.y = element_blank(),
       axis.title.x = element_blank(),
       axis.text.y = element_blank(),
-      axis.text.x = element_blank(),
+      axis.text.x = element_text(family = 'SEGOE UI', size = 20),
       panel.grid.major.x = element_line(colour = 'gray', linewidth = 0.1),
       panel.grid.minor.x = element_blank(),
       panel.background = element_blank(),
       legend.position = 'none'
     ) +
     transition_states(states = Ano, transition_length = 18, state_length = 18) +
-    labs(title = 'Top 5 - Setores mais associados à agricultura', subtitle = 'Setor Agrícola ({closest_state})') +
+    labs(title = 'Top 5 - Setores mais associados à agricultura', subtitle = if(x == 1){'Setor Agrícola Demandante'} else {'Setor Agrícola Ofertante'}, caption = '{closest_state}') +
     view_follow(fixed_x = TRUE)
 
 
@@ -402,13 +403,12 @@ for (x in 1:length(agr_perc)){
                             fps = 30,
                             width = 1500,
                             height = 1200,
-                            duration = 30,
+                            duration = 40,
                             #renderer = 
                             device = 'png',
                             #renderer = gifski_renderer('plot.gif')
                             renderer = ffmpeg_renderer()
                             )
 
-  anim_save(paste0(agr_perc, '.mp4'), animation = plot_race_chart)
-  anim_save(paste0('C:/Users/Paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados', agr_perc, '.mp4'), animation = plot_race_chart)
+  anim_save(paste0(names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
 }
