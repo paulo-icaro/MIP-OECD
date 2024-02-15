@@ -23,6 +23,7 @@ library(plotly)
 library(geomtextpath)
 library(gganimate)
 library(gifski)
+library(scales)
 
 # --- Funcao Percentual --- #
 source('Funcao-Percentual.R')
@@ -344,6 +345,8 @@ ggsave(filename = 'Indice_Dispersao (1995-2018).png',
 
 
 # --- Top 5 - Setores Associados a Agricultura --- #
+# Exemplo para basear 
+
 agr_dmd_perc = agr_oft_perc = NULL
 
 for (c in 1:length(countries)){
@@ -359,56 +362,58 @@ for (c in 1:length(countries)){
 agr_perc = list(agr_dmd_perc, agr_oft_perc)
 names(agr_perc) = c('agr_dmd_perc', 'agr_oft_perc')
 
+# Tenho a impressao que o adicionar espaco antes do texto percentual formatado melhora na exibicao dos valores durante a transicao temporal
 for (x in 1:length(agr_perc)){
   ranking_database_plot = rownames_to_column(as.data.frame(agr_perc[[x]]), 'Setor') %>%
     gather(key = 'Ano', value = 'Valores', -Setor) %>%
     group_by(Ano) %>%
     slice_max(Valores, n = 5) %>%
     mutate(Ranking = rank(-Valores)) %>%
-    mutate(`Participacao %` = percentual(Valores))
+    mutate(`Participacao %` = paste0(' ', percentual(Valores)))                 # Tambem e possivel utilizar a funcao label_percent da library scales
     #filter(Ano == 1995)
-
+  
   Ranking_Plots = 
     ggplot(data = ranking_database_plot, aes(x = Ranking, group = Setor)) +
     geom_tile(aes(y = Valores/2, height = Valores, width = 0.45, fill = as.factor(Setor)), alpha = 0.8) +    # 
     scale_fill_manual(values = c('#1C18EA', '#EA181B', '#18EA84', '#6418EA', '#18EAE0', '#EA5118', '#1a3c47', '#666666'), labels(NULL)) +
-    geom_text(aes(y = (1/1000)*Valores, label = Setor, hjust = 1.05, vjust = 0), size = 6.8) + 
-    geom_text(aes(y = 1.01*Valores, label = `Participacao %`, hjust = 0), size = 6.8) + 
-    scale_y_continuous(labels = c('0%', '5%', '10%', '15%', '20%', '25%', '30%', '35%', '40%', '45%', '50%', '55%', '60%', '75%', '100%'), breaks = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.75, 1), n.breaks = 8) + #scales::comma) +
+    geom_text(aes(y = (1/1000)*Valores, label = Setor, hjust = 1.05, vjust = 0), size = 8.5) + 
+    geom_text(aes(y = 1.01*Valores, label = `Participacao %`, hjust = 0), size = 9) + 
+    scale_y_continuous(labels = label_percent(), breaks = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.75, 1), n.breaks = 8) + #scales::comma) +
     scale_x_reverse() +
     coord_flip(expand = FALSE, clip = 'off') +
     theme(
-      plot.margin = margin(t = 3, b = 5, r = 5, l = 20, unit = 'cm'),
-      title = element_text(family = 'Segoe UI', face = 'italic', size = 23, colour = 'black'),
-      plot.caption = element_text(size = 20),
+      plot.margin = margin(t = 5, b = 7, r = 5, l = 25, unit = 'cm'),
+      title = element_text(family = 'Segoe UI', face = 'italic', size = 27, colour = 'black'),
+      plot.subtitle = element_text(family = 'Segoe UI', face = 'italic', size = 24, colour = 'black'),
+      #plot.caption = element_text(size = 20),
       axis.title.y = element_blank(),
       axis.title.x = element_blank(),
       axis.text.y = element_blank(),
-      axis.text.x = element_text(family = 'SEGOE UI', size = 20),
-      panel.grid.major.x = element_line(colour = 'gray', linewidth = 0.1),
+      axis.text.x = element_text(family = 'Segoe UI', size = 25),
+      panel.grid.major.x = element_line(colour = 'gray', linewidth = 0.2),
       panel.grid.minor.x = element_blank(),
       panel.background = element_blank(),
       legend.position = 'none'
     ) +
-    transition_states(states = Ano, transition_length = 18, state_length = 18) +
-    labs(title = 'Top 5 - Setores mais associados à agricultura', subtitle = if(x == 1){'Setor Agrícola Demandante'} else {'Setor Agrícola Ofertante'}, caption = '{closest_state}') +
+    transition_states(states = Ano, transition_length = 18, state_length = 10) +
+    labs(title = 'Top 5 - Setores associados à agricultura ({closest_state})', subtitle = if(x == 1){'Setor Agrícola Demandante'} else {'Setor Agrícola Ofertante'}) +
     view_follow(fixed_x = TRUE)
-
-
+  
+  
   # Para renderizar vídeos em MP4, e preciso instalar o ffmpeg no computador. Link para download: https://www.gyan.dev/ffmpeg/builds/
   # A pasta deve se extraida e levada ao program_files do pc. Apos isso, deve ser especificado o path da pasta bin nas variaveis ambiente
   # da maquina. Para mais detalhes, ver: https://www.youtube.com/watch?v=WDCJzPfWx6o
   # Obs: a especificacao do path e crucial. Para checar se a instalacao funcionou, digite Sys.which('ffmpeg') no console do R
   plot_race_chart = animate(plot = Ranking_Plots,
                             fps = 30,
-                            width = 1500,
-                            height = 1200,
-                            duration = 40,
+                            width = 2000,
+                            height = 1700,
+                            duration = 35,
                             #renderer = 
                             device = 'png',
                             #renderer = gifski_renderer('plot.gif')
                             renderer = ffmpeg_renderer()
-                            )
-
+  )
+  
   anim_save(paste0(names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
 }
