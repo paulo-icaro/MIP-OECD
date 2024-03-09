@@ -16,6 +16,7 @@
 # ----------------- #
 # --- Libraries --- #
 # ----------------- #
+library(readxl)
 library(tidyverse)
 library(extrafont) 
 library(ggrepel)
@@ -274,18 +275,20 @@ for(c in length(countries)){
 
 
 # --- Medias - Indice de Ligacao --- #
-mean_bl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z2:Z47')
-mean_fl = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Ligação', range = 'Z52:Z97')
+mean_bl = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Índices de Ligação', range = 'Z2:Z47')
+mean_fl = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Índices de Ligação', range = 'Z52:Z97')
 
 mean_linkages = cbind(mean_bl, mean_fl)
 colnames(x = mean_linkages) = c('mean_bl', 'mean_fl')
-rownames(x = mean_linkages) = as.matrix(dim_col_cod)
+rownames(x = mean_linkages) = as.matrix(dim_col_name)
 
 Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_linkages[,1], y = mean_linkages[,2], label = rownames(x = mean_linkages))) +
   geom_point() + 
   geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Ligação para Trás = 1', hjust = 0.05, vjust = -0.15) + 
   geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Ligação para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  geom_label_repel(data = mean_linkages[1,],
+                   aes(x = mean_linkages[1,][,1], y = mean_linkages[1,][,2], label = rownames(x = mean_linkages[1,])),
+                   size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
   labs(#title = 'Índices de Ligação (1995-2018)', 
     x = 'Índice de Ligação para Trás',
     y = 'Índice de Ligação para Frente') + 
@@ -310,18 +313,28 @@ ggsave(filename = 'Indices_Ligacao (1995-2018).png',
 
 
 # --- Medias - Indice de Dispersão --- #
-mean_bd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z2:Z47')
-mean_fd = read_excel(path = 'MIP_OECD/Results/Análises.xlsx', sheet = 'Índices de Dispersão', range = 'Z52:Z97')
+mean_bd = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Índice de Dispersão', range = 'z2:Z47')
+mean_fd = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Índice de Dispersão', range = 'z52:Z97')#[c(1,26)]
+# mean_bd = mean_bd %>% mutate(Ranking = rank(Média))
+# colnames(mean_bd) = c('Setor', 'Média', 'Ranking')
+# top5_bd = rbind(mean_bd %>% slice_min(order_by = Média, n = 5),
+#                 mean_bd %>% filter(Setor == 'D01T02'),
+#                 mean_bd %>% slice_max(order_by = Média, n = 5)
+#                 )
 
 mean_dispersion = cbind(mean_bd, mean_fd)
 colnames(x = mean_dispersion) = c('mean_bd', 'mean_fd')
-rownames(x = mean_dispersion) = as.matrix(dim_col_cod)
+rownames(x = mean_dispersion) = as.matrix(dim_col_name)
 
-Plots_Dispersion = ggplot(data = as.data.frame(x = mean_dispersion), aes(x = mean_dispersion[,1], y = mean_dispersion[,2], label = rownames(x = mean_dispersion))) +
+
+
+Plots_Dispersion = ggplot(data = as.data.frame(x = mean_dispersion), aes(x = mean_dispersion[,1], y = mean_dispersion[,2])) +
   geom_point() + 
   geom_texthline(size = 6.2, yintercept = 1, label = 'Índice de Dispersão para Trás = 1', hjust = 0.08, vjust = -0.15) + 
   geom_textvline(size = 6.2, xintercept = 1, label = 'Índice de Dispersão para Frente = 1', hjust = 0.98, vjust = -0.15) +
-  geom_label_repel(size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
+  geom_label_repel(data = mean_dispersion[1,],
+                   aes(x = mean_dispersion[1,][,1], y = mean_dispersion[1,][,2], label = rownames(x = mean_dispersion[1,])),
+                   size = 6.2, label.r = .2, min.segment.length = 0, fontface = 'italic', nudge_x = 0.03, nudge_y = 0.05) + 
   labs(#title = 'Índices de Dispersão (1995-2018)', 
     x = 'Índice de Dispersão para Trás',
     y = 'Índice de Dispersão para Frente') + 
@@ -345,7 +358,7 @@ ggsave(filename = 'Indice_Dispersao (1995-2018).png',
 
 
 # --- Top 5 - Setores Associados a Agricultura --- #
-# Exemplo para basear 
+# Exemplo para basear: https://www.r-bloggers.com/2020/01/how-to-create-bar-race-animation-charts-in-r/
 
 agr_dmd_perc = agr_oft_perc = NULL
 
