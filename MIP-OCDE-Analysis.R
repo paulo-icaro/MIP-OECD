@@ -39,11 +39,11 @@ library(geomtextpath)
 
 # --- Paths --- #
 #path = 'C:/Users/Paulo/Documents/Repositorios/MIP_OECD/'         # PC/Notebook
-path = setwd(getwd())
+path = getwd()
 
 # --- Funcao Cronometro --- #
 # Funcao que contabiliza o tempo do code // Se precisar use setwd para mudar o path raiz
-source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/Funcao - code_time.R')                
+source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/Funcao - code_time.R')
 
 
 
@@ -103,11 +103,11 @@ db_sectors_matrix =
 remove_col <- c('HFCE', 'NPISH', 'GGFC', 'GFCF', 'INVNT', 'CONS_ABR', 'CONS_NONRES', 'EXPO', 'IMPO')
 remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 
-dim_row_cod <- read_excel(path = paste0(path, '/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'A1:A46')
-dim_col_cod <- read_excel(path = paste0(path, '/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'A1:A46')
+dim_row_cod <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'A1:A46')
+dim_col_cod <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'A1:A46')
 
-dim_row_name <- read_excel(path = paste0(path, '/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46') 
-dim_col_name <- read_excel(path = paste0(path, '/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'B1:B46')
+dim_row_name <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46') 
+dim_col_name <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'B1:B46')
 # dim_row_cod <- unique(database[[1]]) 
 # dim_col_cod <- unique(database[[1]])
 
@@ -122,7 +122,7 @@ I = diag(x = 1, nrow = 45, ncol = 45)
 # Loop Principal - Filtragem por Pais #
 start_time <- Sys.time()
 for (c in length(countries)){
-  database <- read_excel(path = paste0(path, '/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
+  database <- read_excel(path = paste0(path, '/Dataset/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
   database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
   
   # Loop Secundario - Filtragem por Ano #

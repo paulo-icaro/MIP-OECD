@@ -422,11 +422,10 @@ for (x in 1:length(agr_perc)){
                             width = 2000,
                             height = 1700,
                             duration = 35,
-                            #renderer = 
                             device = 'png',
                             #renderer = gifski_renderer('plot.gif')
                             renderer = ffmpeg_renderer()
   )
   
-  anim_save(paste0(names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
+  anim_save(paste0('C:/Users/Paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Top-5  - Setores associados à agricultura/', names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
 }

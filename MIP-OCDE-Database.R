@@ -31,13 +31,10 @@ library(openxlsx)
 
 
 # --- Paths --- #
-path = 'D:/Backup - Icaro/Documentos/Repositorios/'                     # PC
-path = 'C:/Users/Paulo/Documents/Repositorios/'                         # Notebook
-setwd(path)
+path = getwd()
 
 # --- Funcao Cronometro --- #
-source('RAIS/Função - code_time.R', encoding = 'LATIN1')                # Função que contabilizar o tempo do code // Se precisar use setwd para mudar o path raiz
-
+source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/Funcao - code_time.R')
 
 
 
@@ -73,6 +70,6 @@ for (c in 1:length(countries)){
      addWorksheet(wb = wb, sheetName = paste0(countries[c]))
      writeData(wb = wb, sheet = paste0(countries[c]), x = data_extraction)
    }
-  saveWorkbook(wb = wb, file = paste0(path, 'MIP-OECD/', 'Database_IOTS_Countries.xlsx'), overwrite = TRUE)
+  saveWorkbook(wb = wb, file = paste0(path, '/Dataset/', 'Database_IOTS_Countries_x.xlsx'), overwrite = TRUE)
 end_time <- Sys.time()
 code_time(start_time, end_time)
