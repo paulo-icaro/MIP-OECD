@@ -50,7 +50,7 @@ source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/F
 options(timeout = 500000)            
  
 # Variavel com os nomes dos paises
-# Lista com nomes dos países por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
+# Lista com nomes dos paÃ­ses por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
 countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
               'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
               'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',
