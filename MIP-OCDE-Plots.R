@@ -90,7 +90,7 @@ for (c in 1:length(countries)){
     
     
     ggsave(filename = paste0('Evolução das Variáveis - Setor ', dim_row_cod[i, 1], '.png'),
-           path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Evolucao_Variaveis',
+           path = 'G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Evolucao_Variaveis',
            width = 3000,
            height = 1800,
            units = 'px'
@@ -149,7 +149,7 @@ for (c in length(countries)){                                                   
               panel.background = element_rect(fill = '#F2F3F4')
         )
       
-      ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Coeficientes'),
+      ggsave(path = paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Coeficientes'),
              filename = paste0(dim_row_cod[i,1], ' para ', dim_col_cod[j,1], '.png'),
              width = 3000,
              height = 1300,
@@ -199,13 +199,67 @@ for (c in length(countries)){                                                   
             panel.background = element_rect(fill = '#F2F3F4')
       )
     
-    ggsave(path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
+    ggsave(path = paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
            filename = paste0('Evolucao_Produto_', dim_col_cod[i,1], '.png'),
            width = 3000,
            height = 1800,
            units = 'px'
     )
   }
+}
+
+
+
+
+
+# --- Plots - Top-5 Outputs --- #
+for (c in length(countries)){                                                             # c para pais
+    for (t in 1:24){                                                                      # t para o ano
+      if (t == 1) {
+        w = db[[2]][[c]][[t]][c(6, 10, 25, 26, 36, 37, 40),]                              # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
+      } 
+      else {
+        w = rbind(w, db[[2]][[c]][[t]][c(6, 10, 25, 26, 36, 37, 40),])
+      }
+    }
+  
+    
+    colnames(w) = dim_col_name[c(6, 10, 25, 26, 36, 37, 40),]
+    w = as.data.frame(w) %>% select(D10T12, D19, D41T43, D45T47, D64T66, D68, D84) %>% gather(key = "Setor", value = "value")
+    w = cbind(date = 1995:2018, w)
+    
+    
+    Plots <- ggplot(data =  w) + 
+      
+      # Caso deseje plotar para mais de um pais, basta copiar o trecho abaixo
+      geom_line(
+                aes(x = date, y = value, color = Setor),
+                linetype = 'dashed',
+                size = .75) +
+      geom_point(aes(x = date, y = value, color = Setor)) + 
+      scale_x_continuous(breaks = seq(1995, 2018, 2)) +
+      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
+      labs(title = paste0('Evolução: Top-5 Setores com maior Produto (USD Milhões)')) +
+      xlab(label = NULL) +
+      ylab(label = NULL) +
+      theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 16),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
+            axis.title.y = element_text(size = 15 , margin = margin(r = 15)),                   # Titulo do eixo y
+            axis.title.x = element_text(size = 15, margin = margin(t = 15)),                    # Titulo do eixo x
+            axis.text.y = element_text(size = 13),                                              # Textos do eixo y
+            axis.text.x = element_text(angle = 45, margin = margin(t = 12), size = 13),         # Textos do eixo x 
+            panel.background = element_rect(fill = '#F2F3F4'),
+            legend.position = "top",
+            legend.justification = 'left',
+            legend.direction = 'horizontal') +
+      guides(colour = guide_legend(direction = "horizontal", ncol = 7))                         # Quebrar o texto da legenda em n colunas
+    
+    
+    ggsave(path = paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Produtos'),
+           filename = paste0('Evolucao_Top-5_Produto_', dim_col_cod[i,1], '.png'),
+           width = 3000,
+           height = 1800,
+           units = 'px'
+    )
 }
 
 
@@ -234,7 +288,7 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(linkages[,2])), ceiling(max(linkages[,2])), 0.5))
     
     ggsave(plot = Plots_Linkages,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao'),
+           path = paste0('G:Meu Drive//Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao'),
            filename = paste0('Indice_Ligacao (', 1994+t, ')', '.png'),
            width = 4500,
            height = 2500,
@@ -260,7 +314,7 @@ for(c in length(countries)){
       scale_y_continuous(breaks = seq(floor(min(dispersion[,2])), ceiling(max(dispersion[,2])), 0.5))
     
     ggsave(plot = Plots_Dispersion,
-           path = paste0('C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao'),
+           path = paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao'),
            filename = paste0('Indice_Dispersao (', 1994+t, ')', '.png'),
            width = 4500,
            height = 2500,
@@ -302,7 +356,7 @@ Plots_Linkages = ggplot(data = as.data.frame(x = mean_linkages), aes(x = mean_li
 
 
 ggsave(filename = 'Indices_Ligacao (1995-2018).png',
-       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
+       path = 'G:Meu Drive//Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Ligacao',
        width = 4600,
        height = 3400,
        units = 'px'
@@ -348,7 +402,7 @@ Plots_Dispersion = ggplot(data = as.data.frame(x = mean_dispersion), aes(x = mea
 
 
 ggsave(filename = 'Indice_Dispersao (1995-2018).png',
-       path = 'C:/Users/paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao',
+       path = 'G:Meu Drive//Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Indice_Dispersao',
        width = 4600,
        height = 3400,
        units = 'px'
@@ -427,5 +481,5 @@ for (x in 1:length(agr_perc)){
                             renderer = ffmpeg_renderer()
   )
   
-  anim_save(paste0('C:/Users/Paulo/OneDrive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Top-5  - Setores associados à agricultura/', names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
+  anim_save(paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agrícola Brasileiro (1995-2018)/Resultados/Top-5  - Setores associados à agricultura/', names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
 }
