@@ -2,11 +2,6 @@
 # === Input-Output Tables - OECD Countries === #
 # ============================================ #
 
-# ======================================================= #
-# === 1. Conexao com a database e calculo dos indices === #
-# ======================================================= #
-
-
 # --- Autor: Paulo Icaro --- #
 
 
@@ -17,41 +12,27 @@
 # Para multiplos comentarios: ctrl + shift + c
 # Blog bastante interesssante: https://viniciusavale.com/NEDUR/IP-R.html#7_%C3%ADndices_de_liga%C3%A7%C3%A3o
 
-# Obs:
-# Aparentemente, diferente de outras bases, nao da para visualizar essa no navegador devido ao limite
-# do tempo de conexao. Mas e sim possivel acessar os dados utilizando a funcao get_dataset
 
 
-
+# -------------------- #
+# --- 1. Libraries --- #
+# -------------------- #
+library(openxlsx)                 # Escrever arquivos Excel
+library(readxl)                   # Ler arrquivos Excel
+library(tidyverse)                # Mainpulacao de dados
 
 
 # ----------------- #
-# --- Libraries --- #
+# --- 1.1 Paths --- #
 # ----------------- #
-library(openxlsx)
-library(readxl)
-library(tidyverse)
-library(extrafont) 
-library(ggrepel)
-library(plotly)
-library(geomtextpath)
-
-
-# --- Paths --- #
 #path = 'C:/Users/Paulo/Documents/Repositorios/MIP_OECD/'         # PC/Notebook
 path = getwd()
 
-# --- Funcao Cronometro --- #
-# Funcao que contabiliza o tempo do code // Se precisar use setwd para mudar o path raiz
-source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/Funcao - code_time.R')
 
 
-
-
-
-# ---------------- #
-# --- Database --- #
-# ---------------- #
+# ------------------ #
+# --- 2 Database --- #
+# ------------------ #
 
 # --- Listas e colunas para armazenar dados tratados --- #
 countries = c('BRA')
@@ -117,10 +98,11 @@ I = diag(x = 1, nrow = 45, ncol = 45)
 
 
 
-# --- Preparacao da Database e Calculo de Indices de Ligacao, Dispersao e Tracao --- #
+# -------------------------------------------------------------------------------------- #
+# --- 2.1 Preparacao da Database e Calculo de Indices de Ligacao, Dispersao e Tracao --- #
+# -------------------------------------------------------------------------------------- #
 
 # Loop Principal - Filtragem por Pais #
-start_time <- Sys.time()
 for (c in length(countries)){
   database <- read_excel(path = paste0(path, '/Dataset/Database_IOTS_Countries.xlsx'), sheet = countries[c], col_names=TRUE)
   database[c('ObsValue', 'Time')] <- sapply(database[c('ObsValue', 'Time')], as.numeric)                                              # Mudanca da tipagem das colunas especificadas para numeric
@@ -269,15 +251,14 @@ for (c in length(countries)){
     countries[c]
   
 }
-end_time <- Sys.time()
-code_time(start_time, end_time)     #Cronometro
 
 
 
 
-
-# --- Savings --- #
-# Atenção !!! - Rode este code apenas se desejar salvar os resultados
+# ----------------- #
+# --- 3 Savings --- #
+# ----------------- #
+# Atencao !!! - Rode este code apenas se desejar salvar os resultados
 alias <- c('sectors', 'outputs', 'sectors_coef', 'value_added', 'exports',
            'imports', 'int_cons', 'household', 'government', 'investment', 
            'leontief', 'backward_linkages', 'foward_linkages', 'backward_dispersion', 'foward_dispersion', 'pull_index')
@@ -306,8 +287,9 @@ for (c in 1:length(countries)){
 
 
 
-
-# --- Ranking Setores --- #
+# ------------------------- #
+# --- 4 Ranking Setores --- #
+# ------------------------- #
 ranking_matrix_outputs = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
@@ -395,7 +377,6 @@ rm(database,
    ranking_matrix_backward_dispersion, ranking_matrix_foward_dispersion, ranking_matrix_pull_index,
    
    ranking_alias, alias
-   
 )
 
 

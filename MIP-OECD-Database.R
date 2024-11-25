@@ -2,10 +2,6 @@
 # === Input-Output Tables - OECD Countries === #
 # ============================================ #
 
-# =============================== #
-# === 0.Coletar dados da OCDE === #
-# =============================== #
-
 # --- Autor: Paulo Icaro --- #
 
 
@@ -21,27 +17,20 @@
 
 
 
-
-
-# ----------------- #
-# --- Libraries --- #
-# ----------------- #
-library(OECD)                                                           # OECD API
-library(openxlsx)
-
+# -------------------- #
+# --- 1. Libraries --- #
+# -------------------- #
+library(OECD)                       # OECD API
+library(openxlsx)                   # Escrever arquivos Excel
 
 # --- Paths --- #
 path = getwd()
 
-# --- Funcao Cronometro --- #
-source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/Funcao - code_time.R')
 
 
-
-
-# ----------------------- #
-# --- Data Extraction --- #
-# ----------------------- #
+# -------------------------- #
+# --- 2. Data Extraction --- #
+# -------------------------- #
 
 # Na funcao get_dataset o argumento filter e uma lista para indicar as dimensoes do dataset que serao consultadas
 # Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
@@ -50,7 +39,7 @@ source('C:/Users/Paulo/Documents/Repositorios/Analises_Socioeconomicas/Scripts/F
 options(timeout = 500000)            
  
 # Variavel com os nomes dos paises
-# Lista com nomes dos países por Sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
+# Lista com nomes dos paises por sigla: https://www.pucsp.br/~acomin/recursos/codpais.html
 countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
               'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC',
               'HUN', 'ISL', 'IRL', 'ISR', 'ITA', 'JPN', 'KOR',
@@ -62,14 +51,13 @@ countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
               'PHL', 'ROU', 'RUS', 'SAU', 'SGP', 'ZAF', 'TWN',
               'THA', 'TUN', 'VNM')
 
-# --- Extracao --- #
-start_time <- Sys.time()
+# -------------------- #
+# --- 2.1 Extracao --- #
+# -------------------- #
 wb <- createWorkbook(creator = 'pi')
 for (c in 1:length(countries)){
      data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
      addWorksheet(wb = wb, sheetName = paste0(countries[c]))
      writeData(wb = wb, sheet = paste0(countries[c]), x = data_extraction)
    }
-  saveWorkbook(wb = wb, file = paste0(path, '/Dataset/', 'Database_IOTS_Countries_x.xlsx'), overwrite = TRUE)
-end_time <- Sys.time()
-code_time(start_time, end_time)
+saveWorkbook(wb = wb, file = paste0(path, '/Dataset/', 'Database_IOTS_Countries_x.xlsx'), overwrite = TRUE)
