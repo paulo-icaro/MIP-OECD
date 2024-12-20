@@ -2,20 +2,15 @@
 # === Input-Output Tables - OECD Countries === #
 # ============================================ #
 
-# ================ #
-# === 2. Plots === #
-# ================ #
-
-
 # --- Autor: Paulo Icaro --- #
 
 
 
 
 
-# ----------------- #
-# --- Libraries --- #
-# ----------------- #
+# -------------------- #
+# --- 1. Libraries --- #
+# -------------------- #
 library(readxl)
 library(tidyverse)
 library(extrafont) 
@@ -31,9 +26,9 @@ source('Funcao-Percentual.R')
 
 
 
-# ------------------------------- #
-# --- Data Analysis and Plots --- #
-# ------------------------------- #
+# ---------------------------------- #
+# --- 2. Data Analysis and Plots --- #
+# ---------------------------------- #
 
 # --- Execucao do script MIP-OCDE-Analysis --- #
 source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))
@@ -210,19 +205,19 @@ for (c in length(countries)){                                                   
 
 
 
-# --- Plots - Top-5 Outputs --- #
+# --- Plots - Top-10 Outputs --- #
 for (c in length(countries)){                                                             # c para pais
     for (t in 1:24){                                                                      # t para o ano
       if (t == 1) {
-        w = db[[2]][[c]][[t]][c(6, 10, 25, 26, 36, 37, 40),]                              # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
+        w = db[[2]][[c]][[t]][c(1, 6, 10, 11, 20, 25, 26, 36, 37, 38, 40, 41, 42),]                              # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
       } 
       else {
-        w = rbind(w, db[[2]][[c]][[t]][c(6, 10, 25, 26, 36, 37, 40),])
+        w = rbind(w, db[[2]][[c]][[t]][c(1, 6, 10, 11, 20, 25, 26, 36, 37, 38, 40, 41, 42),])
       }
     }
   
     
-    colnames(w) = as.matrix(dim_col_name[c(6, 10, 25, 26, 36, 37, 40),])
+    colnames(w) = as.matrix(dim_col_name[c(1, 6, 10, 11, 20, 25, 26, 36, 37, 38, 40, 41, 42),])
     w = as.data.frame(w) %>%  gather(key = "Setor", value = "value")
     w = cbind(date = 1995:2018, w)
     
@@ -236,8 +231,8 @@ for (c in length(countries)){                                                   
                 linewidth = .5) +
       geom_point(aes(x = date, y = value, color = Setor)) + 
       scale_x_continuous(breaks = seq(1995, 2018, 2)) +
-      scale_y_continuous(breaks = waiver(), n.breaks = 10) + 
-      labs(title = paste0('Evolução: Top-5 Setores com maior produto (USD Milhões)')) +
+      scale_y_continuous(breaks = c(50000, 100000, 200000, 300000, 400000, 450000), labels = c('50.000', '100.000', '200.000', '300.000', '400.000', '450.000')) + 
+      labs(title = paste0('Evolução: Top-10 Setores com maior produto (USD Milhões)')) +
       xlab(label = NULL) +
       ylab(label = NULL) +
       theme(text = element_text(family = 'Segoe UI', face = 'italic', size = 14.5),               # Essa formatacao e geral para todos os tipos de texto. Formatacoes especificas sao feitas abaixo. Estas superam a formatacao geral.
@@ -248,16 +243,16 @@ for (c in length(countries)){                                                   
             panel.background = element_rect(fill = '#F2F3F4'),
             legend.position = 'top',
             legend.justification = 'left',
-            legend.text = element_text(size = 11.5),
+            legend.text = element_text(size = 11),
             legend.title = NULL,
             legend.title.position = 'top') +
-      guides(colour = guide_legend(direction = "horizontal", ncol = 2, nrow = 4))                         # Quebrar o texto da legenda em n colunas por m colunas
+      guides(colour = guide_legend(direction = "horizontal", ncol = 2, nrow = 7))                         # Quebrar o texto da legenda em n colunas por m colunas
     
     
     ggsave(path = paste0('C:/Users/Paulo/Documents/Repositorios/MIP_OECD/Results/Plots/Produtos'),
-           filename = 'Evolucao_Top-5_Produto.png',
+           filename = 'Evolucao_Top-10_Produto.png',
            width = 3000,
-           height = 1800,
+           height = 2000,
            units = 'px'
     )
 }
