@@ -18,7 +18,7 @@ library(strucchange)
 # --------------------------- #
 # --- 2. Previous Scripts --- #
 # --------------------------- #
-source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))     # --- Execucao do script MIP-OCDE-Analysis --- #
+source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))     # --- Run the MIP-OCDE-Analysis script --- #
 
 
 
@@ -27,51 +27,47 @@ source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))     # --- Execucao do scri
 # ------------------------------------- #
 
 # --- 3.1 - Breaking Test on Techinal Coeficients --- #
-bp_test_results = vector(mode = 'list')
-counter = 0
+bp_test_results = vector(mode = 'list')                                                     # List for breaking points test results
+check_breakpoints = vector('list')                                                         # List for visual analysis of the results
+check_matrix = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_row_cod), 1995:2018))  # Store matrix of breaking point of sectors i againt all the j sectors
+counter = 0                                                                                 # Counter of all i x j technical coeficients combinations
 
-for (c in length(countries)){                                                               # c para pais
-  for (i in 1:45){                                                                          # i para linha
-    for (j in 1:45){                                                                        # j para coluna
+for (c in length(countries)){                                                               # c for country
+  for (i in 1:45){                                                                          # i for row
+    for (j in 1:45){                                                                        # j for column
       counter = counter + 1
       
-      # Gathering the Coeficients Series
-      for (t in 1:24){                                                                      # t para o ano
+      # Gathering the coefficients series
+      for (t in 1:24){                                                                      # t for year
         if (t == 1) {w = db[['sectors_coef']][[c]][[t]][i:i,j:j]} 
         else {w <- rbind(w, db[['sectors_coef']][[c]][[t]][i:i,j:j])}
       }
  
-      # Coeficient Time Series
+      # Coeficient time series
       ts_w = ts(data = w, frequency = 1, start = 1995)
   
-      # Bai-Perron Test
-      bp_test_results[[counter]] <- breakpoints(ts_w ~ 1)
-      #summary(bp_test)
-      names(bp_test_results)[counter] = paste0(dim_row_cod[i,],' to ', dim_col_cod[j,])
+      # Bai-Perron test
+      bp_test_results[[counter]] <- breakpoints(ts_w ~ 1)                                   # Breaking points test
+      #summary(bp_test)                                                                     # Summarizing the results
+      names(bp_test_results)[counter] = paste0(dim_row_cod[i,],' to ', dim_col_cod[j,])     # Renaming the storage list
+      check_matrix[j, ] = 1995:2018 %in% (1994 + bp_test_results[[counter]]$breakpoints)    # Matrix for visual checking the breaking points
     }
+    
+    check_matrix = ifelse(check_matrix == FALSE, "", '*')                                   # Replacing FALSE for empty cell and TRUE for *
+    check_breakpoints[[i]] = check_matrix                                                   # Storing the result
+    names(check_breakpoints)[i] = dim_row_cod[i,]
+    check_matrix = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_row_cod), 1995:2018))  # Reseting the matrix
   }
 }
 
 
 
-
-
-# Load the example dataset
-data("Nile")
-
-# Plotting the data
-plot(Nile, main = "Annual Flow of the Nile River", ylab = "Flow", xlab = "Year")
-
-# Chow Test
-nile_pre <- window(Nile, end = 1898)
-nile_post <- window(Nile, start = 1899)
-chow_test <- sctest(Nile ~ 1, type = "Chow", point = 28)
-print(chow_test)
-
-# Bai-Perron Test
-bp_test <- breakpoints(Nile ~ 1)
-summary(bp_test)
-
-# Plotting the breakpoints
-plot(bp_test)
-lines(bp_test, col = "red")
+# -------------------------- #
+# --- 4. Storing Results --- #
+# -------------------------- #
+wb = createWorkbook(creator = 'pi')
+for(i in 1:45){
+  addWorksheet(wb = wb, sheetName = t(dim_row_cod)[i])
+  writeData(wb = wb, sheet = t(dim_row_cod)[i], x = check_breakpoints[[i]], rowNames = TRUE, colNames = TRUE)
+}
+saveWorkbook(wb = wb, file = 'Results/breakpoints_check_coef.xlsx', overwrite = TRUE)
