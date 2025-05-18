@@ -1,16 +1,13 @@
 # ============================================ #
-# === Input-Output Tables - OECD Countries === #
+# === INPUT-OUTPUT TABLES - OECD COUNTRIES === #
 # ============================================ #
 
-# --- Autor: Paulo Icaro --- #
+# --- Script by: Paulo Icaro --- #
 
 
-
-
-
-# -------------------- #
-# --- 1. Libraries --- #
-# -------------------- #
+# ==================== #
+# === 1. Libraries === #
+# ==================== #
 library(readxl)
 library(tidyverse)
 library(extrafont) 
@@ -26,12 +23,16 @@ source('Funcao-Percentual.R')
 
 
 
-# ---------------------------------- #
-# --- 2. Data Analysis and Plots --- #
-# ---------------------------------- #
+# ========================== #
+# === 2. Analysis Script === #
+# ========================== #
+source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))     # Executing the MIP-OCDE-Analysis script
 
-# --- Execucao do script MIP-OCDE-Analysis --- #
-source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))
+
+
+# ================================== #
+# === 3. Data Analysis and Plots === #
+# ================================== #
 
 # --- Evolucao - Variaveis Intermediarias e Finais ---- #
 for (c in 1:length(countries)){

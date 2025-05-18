@@ -1,10 +1,8 @@
-# ========================================================== #
-# ========== Input-Output Tables - OECD Countries ========== #
-# ========================================================== #
-# ============== 4. Structural Breaks Test ================= #
-# ========================================================== #
+# ============================================ #
+# === INPUT-OUTPUT TABLES - OECD COUNTRIES === #
+# ============================================ #
 
-# --- Autor: Paulo Icaro --- #
+# --- Script by: Paulo Icaro --- #
 
 
 
@@ -70,4 +68,4 @@ for(i in 1:45){
   addWorksheet(wb = wb, sheetName = t(dim_row_cod)[i])
   writeData(wb = wb, sheet = t(dim_row_cod)[i], x = check_breakpoints[[i]], rowNames = TRUE, colNames = TRUE)
 }
-saveWorkbook(wb = wb, file = 'Results/breakpoints_check_coef.xlsx', overwrite = TRUE)
+saveWorkbook(wb = wb, file = 'Results/Sheets/breakpoints_check_coef.xlsx', overwrite = TRUE)

@@ -1,21 +1,20 @@
 # ============================================ #
-# === Input-Output Tables - OECD Countries === #
+# === INPUT-OUTPUT TABLES - OECD COUNTRIES === #
 # ============================================ #
 
-# --- Autor: Paulo Icaro --- #
+# --- Script by: Paulo Icaro --- #
+
+
+# ========================== #
+# === 1. Analysis Script === #
+# ========================== #
+source(file = paste0(getwd(),'/MIP-OCDE-Analysis.R'))     # Executing the MIP-OCDE-Analysis script
 
 
 
-# ------------------------ #
-# --- Previous Scripts --- #
-# ------------------------ #
-source(file = paste0(getwd(),'/MIP-OCDE-Analysis.R'))     # --- Execucao do script MIP-OCDE-Analysis --- #
-
-
-
-# -------------------------- #
-# --- 1. Ranking Setores --- #
-# -------------------------- #
+# ========================== #
+# === 2. Sectors Ranking === #
+# ========================== #
 ranking_matrix_outputs = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 ranking_matrix_backward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
 ranking_matrix_foward_linkages = matrix(data = NA, nrow = 45, ncol = 24, dimnames = list(t(dim_col_cod), 1995:2018))
@@ -66,12 +65,13 @@ for (c in 1:length(countries)){
     addWorksheet(wb = wb, sheetName = paste0(ranking_alias[a], '_', countries[c]))
     writeData(wb = wb, sheet = paste0(ranking_alias[a], '_', countries[c]), x = ranking_list[[c]][[a]], rowNames = TRUE)
   }
-  saveWorkbook(wb = wb, file = paste0(path, paste0('/Results/mip_rankings', '_', countries[c], '.xlsx')), overwrite = TRUE)
+  saveWorkbook(wb = wb, file = paste0(path, paste0('/Results/Sheets/mip_rankings', '_', countries[c], '.xlsx')), overwrite = TRUE)
 }
 
 
-
-# Liberando memoria
+# =========================== #
+# === 3. Releasing Memory === #
+# =========================== #
 rm(ranking_outputs_sectors, ranking_backward_linkages, ranking_foward_linkages,
    ranking_backward_dispersion, ranking_foward_dispersion, ranking_matrix_outputs,
    ranking_matrix_backward_linkages, ranking_matrix_foward_linkages,

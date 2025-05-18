@@ -1,9 +1,8 @@
 # ============================================ #
-# === Input-Output Tables - OECD Countries === #
+# === INPUT-OUTPUT TABLES - OECD COUNTRIES === #
 # ============================================ #
 
-# --- Autor: Paulo Icaro --- #
-
+# --- Script by: Paulo Icaro --- #
 
 # Link com a estrutura do dataset: https://stats.oecd.org/restsdmx/sdmx.ashx/GetDataStructure/IOTS_2021
 # Link onde os dados sao consultados: https://stats.oecd.org/restsdmx/sdmx.ashx/GetData/IOTS_2021
@@ -16,10 +15,9 @@
 # do tempo de conexao. Mas e sim possivel acessar os dados utilizando a funcao get_dataset
 
 
-
-# -------------------- #
-# --- 1. Libraries --- #
-# -------------------- #
+# ==================== #
+# === 1. Libraries === #
+# ==================== #
 library(OECD)                       # OECD API
 library(openxlsx)                   # Escrever arquivos Excel
 
@@ -28,9 +26,9 @@ path = getwd()
 
 
 
-# -------------------------- #
-# --- 2. Data Extraction --- #
-# -------------------------- #
+# ========================== #
+# === 2. Data Extraction === #
+# ========================== #
 
 # Na funcao get_dataset o argumento filter e uma lista para indicar as dimensoes do dataset que serao consultadas
 # Obs: mudar a tipagem das colunas do dataframe (https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r)
@@ -51,9 +49,9 @@ countries <- c('AUS', 'AUT', 'BEL', 'CAN', 'CHL', 'COL', 'CRI',
               'PHL', 'ROU', 'RUS', 'SAU', 'SGP', 'ZAF', 'TWN',
               'THA', 'TUN', 'VNM')
 
-# -------------------- #
-# --- 2.1 Extracao --- #
-# -------------------- #
+# ---------------------- #
+# --- 2.1 Extraction --- #
+# ---------------------- #
 wb <- createWorkbook(creator = 'pi')
 for (c in 1:length(countries)){
      data_extraction <- get_dataset(dataset = "IOTS_2021", filter = list(c("TTL"), countries[c]), start_time = 1995, end_time = 2018)
