@@ -86,10 +86,14 @@ remove_row <- c('TXS_IMP_FNL', 'TXS_INT_FNL', 'TTL_INT_FNL', 'VALU', 'OUTPUT')
 dim_row_cod <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'A1:A46')
 dim_col_cod <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'A1:A46')
 
-dim_row_name <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46') 
+dim_row_name <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'B1:B46')
 dim_col_name <- read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'B1:B46')
 # dim_row_cod <- unique(database[[1]]) 
 # dim_col_cod <- unique(database[[1]])
+
+dim_row_sector = read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "linha", col_names=TRUE, range = 'C1:C46')
+dim_col_sector = read_excel(path = paste0(path, '/Dataset/Dimensoes.xlsx'), sheet = "coluna", col_names=TRUE, range = 'C1:C46')
+
 
 
 # Matriz Diagonal (I)

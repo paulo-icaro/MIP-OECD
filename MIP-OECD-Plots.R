@@ -17,6 +17,7 @@ library(geomtextpath)
 library(gganimate)
 library(gifski)
 library(scales)
+library(gridExtra)
 
 # --- Funcao Percentual --- #
 source('Funcao-Percentual.R')
@@ -30,11 +31,11 @@ source(file = paste0(getwd(),'/MIP-OECD-Analysis.R'))     # Executing the MIP-OC
 
 
 
-# ================================== #
-# === 3. Data Analysis and Plots === #
-# ================================== #
+# ================ #
+# === 3. Plots === #
+# ================ #
 
-# --- Evolucao - Variaveis Intermediarias e Finais ---- #
+# --- 3.1 - Intermediate and Final Variables Evolution --- #
 for (c in 1:length(countries)){
   for (i in 1:45){
     for (t in 1:24){
@@ -99,9 +100,7 @@ for (c in 1:length(countries)){
 
 
 
-
-
-# --- Plots - Coeficientes --- #
+# --- 3.2 - Coefficients --- #
 
 # Em aes o argumento color e empregado de maneira nao usual.
 # Ele e utilizado para definir uma especie de id que sera associada a uma cor na funcao scale_color_manual
@@ -109,10 +108,10 @@ for (c in 1:length(countries)){
 # loadfonts(device = 'win'): ler o banco de dados de fontes importado e os registra junto ao R
 # windowsFonts(): para ver todos os tipos de fontes agora disponiveis (por default o R so possui Times New Roman, Arial e Courier New)
 # Para mais sobre o assunto, ver: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-for (c in length(countries)){                                                               # c para pais
-  for (i in 1:45){                                                                          # i para linha
-    for (j in 1:45){                                                                        # j para coluna
-      for (t in 1:24){                                                                      # t para o ano
+for (c in length(countries)){                                                               # c for country
+  for (i in 1:45){                                                                          # i for row
+    for (j in 1:45){                                                                        # j for column
+      for (t in 1:24){                                                                      # t for year
         if (t == 1) {
           w = db[[3]][[c]][[t]][i:i,j:j]                                                    # Gerar plot da serie de coeficientes
         } 
@@ -156,12 +155,9 @@ for (c in length(countries)){                                                   
 
 
 
-
-
-
-# --- Plots - Outputs --- #
-for (c in length(countries)){                                                             # c para pais
-  for (i in 1:45){                                                                        # j para coluna
+# --- 3.3 - Outputs --- #
+for (c in length(countries)){                                                             # c for country
+  for (i in 1:45){                                                                        # i for sector
     for (t in 1:24){                                                                      # t para o ano
       if (t == 1) {
         w = db[[2]][[c]][[t]][i,]                                         # Gerar plot da serie de valores da MIP // Obs: lembre que se esta extraindo valor de uma matriz e nao mais de um dataframe
@@ -204,9 +200,7 @@ for (c in length(countries)){                                                   
 
 
 
-
-
-# --- Plots - Top-10 Outputs --- #
+# --- 3.4 - Top-10 Outputs --- #
 for (c in length(countries)){                                                             # c para pais
     for (t in 1:24){                                                                      # t para o ano
       if (t == 1) {
@@ -262,7 +256,7 @@ for (c in length(countries)){                                                   
 
 
 
-# --- Plots - Backward and Foward Linkages and Dispersion --- #
+# --- 3.5 - Backward and Foward Linkages and Dispersion --- #
 # https://www.statology.org/geom_vline-label/
 for(c in length(countries)){
   for(t in 1:24){
@@ -322,9 +316,7 @@ for(c in length(countries)){
 
 
 
-
-
-# --- Medias - Indice de Ligacao --- #
+# --- 3.6 - Backward and Foward Linkages Mean --- #
 mean_bl = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Indices de Ligacao', range = 'Z2:Z47')
 mean_fl = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Indices de Ligacao', range = 'Z52:Z97')
 
@@ -360,9 +352,7 @@ ggsave(filename = 'Indices_Ligacao (1995-2018).png',
 
 
 
-
-
-# --- Medias - Indice de Dispersao --- #
+# --- 3.7 - Backward and Foward Dispersion Mean --- #
 mean_bd = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Indice de Dispersao', range = 'z2:Z47')
 mean_fd = read_excel(path = paste0(getwd(), '/Results/Analises.xlsx'), sheet = 'Indice de Dispersao', range = 'z52:Z97')#[c(1,26)]
 # mean_bd = mean_bd %>% mutate(Ranking = rank(Média))
@@ -406,8 +396,7 @@ ggsave(filename = 'Indice_Dispersao (1995-2018).png',
 
 
 
-
-# --- Top 5 - Setores Associados a Agricultura --- #
+# --- 3.8 - Top-5 Sectors Related to Agriculture and Livestock --- #
 # Exemplo para basear: https://www.r-bloggers.com/2020/01/how-to-create-bar-race-animation-charts-in-r/
 
 agr_dmd_perc = agr_oft_perc = NULL
@@ -479,3 +468,54 @@ for (x in 1:length(agr_perc)){
   
   anim_save(paste0('G:Meu Drive/Arquivos para estudo da UFC/Doutorado/Tese/Análise Insumo-Produto do Setor Agricola Brasileiro (1995-2018)/Resultados/Top-5  - Setores associados a agricultura/', names(agr_perc[x]), '.mp4'), animation = plot_race_chart)
 }
+
+
+# --- 3.9 - Boxplot --- #
+# Gathering data
+for (c in 1:length(countries)){
+  for (t in 1:24){
+    if (t == 1){
+      backward_linkages = cbind(db[[12]][[c]][[t]], 1994+t, dim_col_sector)
+      forward_linkages = cbind(db[[13]][[c]][[t]], 1994+t, dim_col_sector)
+      backward_dispersion = cbind(db[[14]][[c]][[t]], 1994+t, dim_col_sector)
+      forward_dispersion = cbind(db[[15]][[c]][[t]], 1994+t, dim_col_sector)
+      pull_index = cbind(db[[16]][[c]][[t]], 1994+t, dim_col_sector)}
+    else{
+      backward_linkages = rbind(backward_linkages, cbind(db[[12]][[c]][[t]], 1994+t, dim_col_sector))
+      forward_linkages = rbind(forward_linkages, cbind(db[[13]][[c]][[t]], 1994+t, dim_col_sector))
+      backward_dispersion = rbind(backward_dispersion, cbind(db[[14]][[c]][[t]], 1994+t, dim_col_sector))
+      forward_dispersion = rbind(forward_dispersion, cbind(db[[15]][[c]][[t]], 1994+t, dim_col_sector))
+      pull_index = rbind(pull_index, cbind(db[[16]][[c]][[t]], 1994+t, dim_col_sector))}
+  }
+}
+
+# Renaming columns
+colnames(backward_linkages) = colnames(forward_linkages) = colnames(backward_dispersion) = colnames(forward_dispersion) = colnames(pull_index) = c('Index', 'Year', 'Sector')
+
+# Plots
+plot_backward_linkages = ggplot(backward_linkages, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de ligação para trás') +
+  theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_text(size = 12), axis.text.x = element_text(size = 11))
+plot_forward_linkages = ggplot(forward_linkages, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de ligação para frente') +
+  theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
+plot_backward_dispersion = ggplot(backward_dispersion, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de dispersão para trás') +
+  theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
+plot_forward_dispersion = ggplot(forward_dispersion, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de dispersão para frente') +
+  theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
+plot_pull_index = ggplot(pull_index, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de tração') +
+  theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
+
+# Grid arranging
+plot_all_indexes = grid.arrange(plot_backward_linkages, plot_forward_linkages, plot_backward_dispersion, plot_forward_dispersion, plot_pull_index, ncol = 5)
+
+# Store image
+ggsave(filename = 'Boxplot.png',
+       plot = plot_all_indexes,
+       path = 'Results/',
+       width = 45,
+       height = 30,
+       units = 'cm',
+       dpi = 1000
+)
+
+# Cleasing
+rm(plot_backward_linkages, plot_forward_linkages, plot_backward_dispersion, plot_forward_dispersion, plot_pull_index)
