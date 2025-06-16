@@ -492,16 +492,57 @@ for (c in 1:length(countries)){
 # Renaming columns
 colnames(backward_linkages) = colnames(forward_linkages) = colnames(backward_dispersion) = colnames(forward_dispersion) = colnames(pull_index) = c('Index', 'Year', 'Sector')
 
+# Colors classes for each relevant group 
+colors_pallet = function(index, target_groups){
+  ifelse(index$Sector %in% target_groups$Group_A, '#1F4E78', ifelse(index$Sector %in% target_groups$Group_B, '#507495', ifelse(index$Sector %in% target_groups$Group_C, '#ADB8C9', 'white')))
+}
+
+# Target groups
+# i. Backward_Linkages
+targets_backward_linkages = list('Group_A' = c('S10', 'S11'), 'Group_B' = c('S13', 'S15', 'S21'), 'Group_C' = c('S04', 'S06', 'S07', 'S17', 'S18', 'S20', 'S29'))
+backward_linkages$Color = colors_pallet(backward_linkages, targets_backward_linkages)
+
+# ii. Forward_Linkages
+targets_forward_linkages = list('Group_A' = c('S10', 'S11', 'S26', 'S38'), 'Group_B' = c('S39'), 'Group_C' = c('S03', 'S36'))
+forward_linkages$Color = colors_pallet(forward_linkages, targets_forward_linkages)
+
+# iii. Backward_Dispersion
+targets_backward_dispersion = list('Group_A' = c(''), 'Group_B' = c('S13', 'S14', 'S18', 'S29'), 'Group_C' = c('S03', 'S04', 'S05', 'S06', 'S10', 'S12', 'S15', 'S16', 'S32'))
+backward_dispersion$Color = colors_pallet(backward_dispersion, targets_backward_dispersion)
+
+# iv. Forward_Dispersion
+targets_forward_dispersion = list('Group_A' = c('S26', 'S38'), 'Group_B' = c('S10', 'S11', 'S39'), 'Group_C' = c('S03', 'S27', 'S36'))
+forward_dispersion$Color = colors_pallet(forward_dispersion, targets_forward_dispersion)
+
+# v. Pull_Index
+targets_pull_index = list('Group_A' = c('S26', 'S10', 'S11', 'S38'), 'Group_B' = c(''), 'Group_C' = c('S27', 'S39', 'S15', 'S03', 'S13'))
+pull_index$Color = colors_pallet(pull_index, targets_pull_index)
+
+
 # Plots
-plot_backward_linkages = ggplot(backward_linkages, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de ligação para trás') +
+plot_backward_linkages = ggplot(data = backward_linkages, aes(x = Index, y = Sector, fill = Sector)) + geom_boxplot() +
+  scale_fill_manual(values = setNames(backward_linkages$Color, backward_linkages$Sector), labels(NULL), guide = 'none') +
+  labs(title = 'Índice de ligação para trás') +
   theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_text(size = 12), axis.text.x = element_text(size = 11))
-plot_forward_linkages = ggplot(forward_linkages, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de ligação para frente') +
+
+plot_forward_linkages = ggplot(forward_linkages, aes(x = Index, y = Sector, fill = Sector)) + geom_boxplot() +
+  scale_fill_manual(values = setNames(forward_linkages$Color, forward_linkages$Sector), labels(NULL), guide = 'none') +
+  labs(title = 'Índice de ligação para frente') +
   theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
-plot_backward_dispersion = ggplot(backward_dispersion, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de dispersão para trás') +
+
+plot_backward_dispersion = ggplot(backward_dispersion, aes(x = Index, y = Sector, fill = Sector)) + geom_boxplot() +
+  scale_fill_manual(values = setNames(backward_dispersion$Color, backward_dispersion$Sector), labels(NULL), guide = 'none') +
+  labs(title = 'Índice de dispersão para trás') +
   theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
-plot_forward_dispersion = ggplot(forward_dispersion, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de dispersão para frente') +
+
+plot_forward_dispersion = ggplot(forward_dispersion, aes(x = Index, y = Sector, fill = Sector)) + geom_boxplot() +
+  scale_fill_manual(values = setNames(forward_dispersion$Color, forward_dispersion$Sector), labels(NULL), guide = 'none') +
+  labs(title = 'Índice de dispersão para frente') +
   theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
-plot_pull_index = ggplot(pull_index, aes(x = Index, y = Sector)) + geom_boxplot() + labs(title = 'Índice de tração') +
+
+plot_pull_index = ggplot(pull_index, aes(x = Index, y = Sector, fill = Sector)) + geom_boxplot() +
+  scale_fill_manual(values = setNames(pull_index$Color, pull_index$Sector), labels(NULL), guide = 'none') +
+  labs(title = 'Índice de tração') +
   theme(plot.title = element_text(hjust = 0.5), axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text.y = element_blank())
 
 # Grid arranging
@@ -514,7 +555,7 @@ ggsave(filename = 'Boxplot.png',
        width = 45,
        height = 30,
        units = 'cm',
-       dpi = 1000
+       dpi = 600
 )
 
 # Cleasing
